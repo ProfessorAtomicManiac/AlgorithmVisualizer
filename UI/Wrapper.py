@@ -1,5 +1,5 @@
 import pygame
-import UI
+import UI.UI as UI
 
 class Window():
     '''Creation of the actual window
@@ -41,7 +41,7 @@ class Text(pygame.sprite.Sprite):
         self.image = font.render(text, True, color)
 
         if (will_slide):
-            self.rect = self.image.get_rect(center = (window.window.get_size()[0] + 1000, coords[1]))
+            self.rect = self.image.get_rect(center = (window.window.get_size()[0] + 800, coords[1]))
         else: 
             self.rect = self.image.get_rect(center = coords)
         self.screen = screen
@@ -86,7 +86,6 @@ class Button(pygame.sprite.Sprite):
     def player_input(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen):
-                print(self.args)
                 self.function(self.window, self.args)
             else:
                 self.image = self.images[1]
@@ -179,6 +178,7 @@ class TextButton(pygame.sprite.Sprite):
         self.destroy()
     
 class Background(pygame.sprite.Sprite):
+    # TODO: Make background slide
     '''Creates a background
        TODO: make the background have white edges or smth
        @window = the window class
