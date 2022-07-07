@@ -14,7 +14,7 @@ class MainMenuActions():
        args[0] = screen_group
        args[1] = options_group
     '''
-    def display_main_menu(window, slide_in, args):
+    def display_main_menu(window, slide_in, screen_group, options_screen_group):
         # Constants
         TITLE_Y = 100
         SORTING_Y = 200
@@ -25,24 +25,23 @@ class MainMenuActions():
         # Remember to change screen
         window.screen = Wrapper.Screen.MAIN_MENU
 
-        screen_group = args[0]
-        options_screen_group = args[1]
-
         # Display everything
         ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 50)
         screen_group.empty()
+        pressed_sorting = Wrapper.add_args_to_func(MainMenuActions.pressed_sorting, window)
+        pressed_graph = Wrapper.add_args_to_func(MainMenuActions.pressed_graph, window)
         screen_group.add(Wrapper.Text(window, "Algorithm Visualizer", (window.window.get_size()[0]/2, TITLE_Y), ubuntu_font, "#E0E1DD", Wrapper.Screen.MAIN_MENU, slide_in))
-        screen_group.add(Wrapper.TextButton("Sorting", ((window.window.get_size()[0]/2), SORTING_Y), MainMenuActions.pressed_sorting, Wrapper.Screen.MAIN_MENU, window, slide_in))
-        screen_group.add(Wrapper.TextButton("Graphs", ((window.window.get_size()[0]/2), GRAPH_Y), MainMenuActions.pressed_graph, Wrapper.Screen.MAIN_MENU, window, slide_in))
+        screen_group.add(Wrapper.TextButton("Sorting", ((window.window.get_size()[0]/2), SORTING_Y), pressed_sorting, Wrapper.Screen.MAIN_MENU, window, slide_in))
+        screen_group.add(Wrapper.TextButton("Graphs", ((window.window.get_size()[0]/2), GRAPH_Y), pressed_graph, Wrapper.Screen.MAIN_MENU, window, slide_in))
         
         # Options
         OptionActions.display_options_button(window, screen_group, options_screen_group)
     
     # Input code, specifically here for button presses
-    def pressed_sorting(window, *args):
+    def pressed_sorting(window):
         window.switch_screen(Wrapper.Screen.SORTING_SCREEN)
         window.screen_change = True
-    def pressed_graph(window, *args):
+    def pressed_graph(window):
         window.switch_screen(Wrapper.Screen.GRAPH_MENU)
         window.screen_change = True
 
@@ -53,18 +52,18 @@ class OptionActions():
         options_button_1 = pygame.transform.rotozoom(options_button_1, 0, 0.1)
         options_button_2 = pygame.image.load('Button/OptionButtons/options_hover.png').convert_alpha()
         options_button_2 = pygame.transform.rotozoom(options_button_2, 0, 0.1)
+        display_options = Wrapper.add_args_to_func(OptionActions.display_options, window, options_screen_group)
         # TODO: Crop image properly using Figma
-        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), OptionActions.display_options, Wrapper.Screen.NONE, window, False, options_screen_group, screen_group))
+        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, Wrapper.Screen.NONE, window, False))
+    
     '''@args = options_group should be passed in first, then screen_group'''
-    def display_options(window, args):
+    def display_options(window, options_group):
         # Constants
         OPTIONS_WIDTH = 300
         OPTIONS_HEIGHT = 300
 
         # Switch on options
         window.options_screen = True
-        options_group = args[0]
-        screen_group = args[1]
 
         # Draw everything
         options_group.add(Wrapper.Background("#1B263B", (window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT)))
@@ -72,15 +71,16 @@ class OptionActions():
         # Where the text starts rendering
         text_start = window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
         options_group.add(Wrapper.Text(window, "Options", (window.window.get_size()[0]/2, text_start), ubuntu_font, "#E0E1DD", Wrapper.Screen.NONE, False))
-        options_group.add(Wrapper.TextButton("Return", (window.window.get_size()[0]/2, text_start + 100), OptionActions.close_options, Wrapper.Screen.NONE, window, False, True, options_group))
-        options_group.add(Wrapper.TextButton("Main Menu", (window.window.get_size()[0]/2, text_start + 175), OptionActions.press_main_menu, Wrapper.Screen.NONE, window, False, True, options_group, screen_group))
+        close_options = Wrapper.add_args_to_func(OptionActions.close_options, window, options_group)
+        press_main_menu = Wrapper.add_args_to_func(OptionActions.press_main_menu, window, options_group)
+        options_group.add(Wrapper.TextButton("Return", (window.window.get_size()[0]/2, text_start + 100), close_options, Wrapper.Screen.NONE, window, False, True))
+        options_group.add(Wrapper.TextButton("Main Menu", (window.window.get_size()[0]/2, text_start + 175), press_main_menu, Wrapper.Screen.NONE, window, False, True))
     
     # Input (specifically buttons)
 
     '''@args = options_group'''
-    def close_options(window, args):
-        screen_group = args[0]
-        screen_group.empty()
+    def close_options(window, options_group):
+        options_group.empty()
         # TODO: Fix glitch where when you press the return button, it will simultaneously press the button behind it
         time.sleep(0.30)
         window.options_screen = False
@@ -88,8 +88,8 @@ class OptionActions():
     '''@args[0] = options_group
        @args[1] = screen_group
     '''
-    def press_main_menu(window, args):
-        OptionActions.close_options(window, args)
+    def press_main_menu(window, options_group):
+        OptionActions.close_options(window, options_group)
         window.screen = Wrapper.Screen.MAIN_MENU
         window.screen_change = True
         window.options_screen = False
@@ -118,21 +118,20 @@ class SortingActions():
         #CONFIG_Y = SORTING_HEIGHT + 2*SORTING_MARGIN_Y
         self.CONFIG_HEIGHT = self.SORTING_HEIGHT
 
+        self.array_length = 512
+
         self.SORTING_X = (window.window.get_size()[0] - self.CONFIG_WIDTH - 2*self.MARGIN_X)/2 + self.MARGIN_X
         self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
         self.sorting_group = sorting_group
         sorting_group.empty()
         #print("{},{}  {},{}".format(self.SORTING_WIDTH, self.SORTING_HEIGHT, self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
-        self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), 20)
+        self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), self.array_length)
 
-    def display_sorting(self, window, args):
+    def display_sorting(self, window, screen_group, options_screen_group):
         if (window.screen == Wrapper.Screen.SORTING_SCREEN and (not window.screen_change and not window.window_size_change)):
             return
         # Change Screen
         window.screen = Wrapper.Screen.SORTING_SCREEN
-
-        screen_group = args[0]
-        options_screen_group = args[1]
 
         # Drawing Everything
         ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 50)
@@ -144,8 +143,8 @@ class SortingActions():
         screen_group.add(Wrapper.Background("#1B263B", (self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT)))
         #screen_group.add(Wrapper.Background("#1B263B", (CONFIG_X, CONFIG_Y), (CONFIG_WIDTH, CONFIG_HEIGHT)))
         
-        #screen_group.add(Wrapper.TextButton("Sorting", ((window.window.get_size()[0]/2), 200), MainMenuActions.pressed_sorting, Screen.SORTING_SCREEN, window))
-        #screen_group.add(Wrapper.TextButton("Graphs", ((window.window.get_size()[0]/2), 270), MainMenuActions.pressed_graph, Screen.SORTING_SCREEN, window))
+        screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), self.array.shuffle, Wrapper.Screen.SORTING_SCREEN, window))
+        screen_group.add(Wrapper.TextButton("Reset", ((5*window.window.get_size()[0]/6), 270), self.array.reset, Wrapper.Screen.SORTING_SCREEN, window))
         
         # Options button
         OptionActions.display_options_button(window, screen_group, options_screen_group)

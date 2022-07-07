@@ -2,6 +2,11 @@ import enum
 import pygame
 
 '''Contains code for various objects that are used frequently as sprites'''
+def add_args_to_func(func, *args, **kwargs):
+        #@func.wraps(inner) # This is optional TODO: Fix and understand wut this is
+        def inner():
+            return func(*args, **kwargs)
+        return inner
 
 class Screen(enum.Enum):
     '''Enum for which screen the window is on
@@ -74,6 +79,7 @@ class Text(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center = self.coords)
         self.destroy()
 
+# TODO: There is a double where a click registers as a double click
 class Button(pygame.sprite.Sprite):
     '''This is an icon button class
        @coords = the icon will be centered at those coords
@@ -85,7 +91,7 @@ class Button(pygame.sprite.Sprite):
        you can still use buttons on the main screen)
        @args = arguments to pass to the function
     '''
-    def __init__(self, images, coords, function, screen, window, options=False, *args):
+    def __init__(self, images, coords, function, screen, window, options=False):
         super().__init__()
         self.images = images
         self.image = images[0]
@@ -93,13 +99,12 @@ class Button(pygame.sprite.Sprite):
         self.function = function
         self.screen = screen
         self.window = window
-        self.args = args
         self.options = options
 
     def player_input(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen):
-                self.function(self.window, self.args)
+                self.function()
             else:
                 self.image = self.images[1]
         else:
@@ -139,7 +144,9 @@ class TextButton(pygame.sprite.Sprite):
        you can still use buttons on the main screen)
        @args = arguments to pass to the function
     '''
-    def __init__(self, text, coords, function, screen, window, will_slide = True, options = False, *args):
+    
+
+    def __init__(self, text, coords, function, screen, window, will_slide = True, options = False):
         super().__init__()
         ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 26)
         self.text = ubuntu_font.render(text, True, "#E0E1DD")
@@ -158,12 +165,11 @@ class TextButton(pygame.sprite.Sprite):
         self.accel = 0
         self.width = 200
         self.height = 50
-        self.args = args
 
     def player_input(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen):
-                self.function(self.window, self.args)
+                self.function()
             else:
                 self.image = pygame.image.load("Button/button_hovering.png").convert_alpha()
         else:

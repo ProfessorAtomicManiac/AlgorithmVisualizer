@@ -1,4 +1,5 @@
 import pygame
+import random
 
 class ArrayElement(pygame.sprite.Sprite):
     def __init__(self, color, coords, dim):
@@ -24,16 +25,32 @@ class Array():
     '''
     def __init__(self, array_group, dim, coords, end):
         self.array_group = array_group
+        self.list = []
+        for i in range(1, end+1):
+            self.list.append(i)
         self.dim = dim
         self.coords = coords
         self.end = end
-        width = dim[0]/self.end
-        y = coords[1] + dim[1]
+        self.createList()
+        
+    def createList(self):
+        width = self.dim[0]/self.end
+        y = self.coords[1] + self.dim[1]
         for i in range(1, self.end+1):
-            height = i*dim[1]/self.end
-            x = coords[0] + (i-1)*dim[0]/self.end
+            height = self.list[i-1] * self.dim[1]/self.end
+            x = self.coords[0] + (i-1)*self.dim[0]/self.end
             self.array_group.add(ArrayElement("#ffffff", (x,y), (width, height)))
             print("{},{}  {},{}".format(x, y, width, height))
 
+    # TODO: As part of the challenge, code ur own shuffle method
     def shuffle(self):
-        pass
+        random.shuffle(self.list)
+        self.array_group.empty()
+        self.createList()
+
+    def reset(self):
+        self.list = []
+        self.array_group.empty()
+        for i in range(1, self.end+1):
+            self.list.append(i)
+        self.createList()
