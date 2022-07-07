@@ -1,5 +1,15 @@
+import enum
 import pygame
-import UI.UI as UI
+
+'''Contains code for various objects that are used frequently as sprites'''
+
+class Screen(enum.Enum):
+    '''Enum for which screen the window is on
+    '''
+    NONE = -1
+    MAIN_MENU = 0
+    SORTING_SCREEN = 1
+    GRAPH_MENU = 2
 
 class Window():
     '''Creation of the actual window
@@ -7,8 +17,9 @@ class Window():
        @width = width of the window
        @height = height of the window
        @screen = which screen the window is on
+       @screen_change = the screen changed screens?
     '''
-    def __init__(self, width, height, screen):
+    def __init__(self, width, height, screen, screen_change, window_size_change):
         self.window = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         self.window.fill("#0D1B2A")
         pygame.display.set_caption("Algorithm Visualizer")
@@ -16,8 +27,10 @@ class Window():
         self.screen = screen
         self.background = pygame.Surface((width, height))
         self.background.fill("#0D1B2A")
-        self.screen_change = True
+        self.screen_change = screen_change
         self.options_screen = False
+        self.window_size_change = window_size_change
+
 
     def update(self):
         self.window.blit(self.background, (0, 0))
@@ -33,9 +46,9 @@ class Text(pygame.sprite.Sprite):
         @font = the font
         @color = the color of the text
         @screen = the text will stay put if its the right screen, otherwise it will do a scrolling animation
-        @will_slide = whether the thing will slide
+        @will_slide = whether the thing will slide into the screen when initialized
     '''
-    def __init__(self, window, text, coords, font, color, screen, will_slide = True):
+    def __init__(self, window, text, coords, font, color, screen, will_slide):
         super().__init__()
         self.window = window
         self.image = font.render(text, True, color)
@@ -53,7 +66,7 @@ class Text(pygame.sprite.Sprite):
             self.kill()
 
     def update(self):
-        if ((self.screen != self.window.screen and self.screen != UI.Screen.NONE) or self.rect.x > self.coords[0]):
+        if ((self.screen != self.window.screen and self.screen != Screen.NONE) or self.rect.x > self.coords[0]):
             self.accel += -1
             self.rect.x += self.accel
         else:
@@ -97,7 +110,7 @@ class Button(pygame.sprite.Sprite):
             self.kill()
 
     def update(self):
-        if (self.screen != self.window.screen and self.screen != UI.Screen.NONE):
+        if (self.screen != self.window.screen and self.screen != Screen.NONE):
             self.rect.x -= 15
         self.player_input()
         self.destroy()
@@ -161,7 +174,7 @@ class TextButton(pygame.sprite.Sprite):
             self.kill()
 
     def slide(self):
-        if ((self.screen != self.window.screen and self.screen != UI.Screen.NONE) or self.rect.x + self.width/2 > self.coords[0]):
+        if ((self.screen != self.window.screen and self.screen != Screen.NONE) or self.rect.x + self.width/2 > self.coords[0]):
             self.accel += -1
             self.rect.x += self.accel
             self.textRect.x += self.accel
@@ -179,20 +192,22 @@ class TextButton(pygame.sprite.Sprite):
     
 class Background(pygame.sprite.Sprite):
     # TODO: Make background slide
-    '''Creates a background
+    '''Creates a background (also used as an array element)
        TODO: make the background have white edges or smth
-       @window = the window class
        @color = the color that the background will be in
        @coords = the coordinates where the rectangle will be centered at
        @dim = the dimensions of the rectangle
     '''
-    def __init__(self, window, color, coords, dim):
+    def __init__(self, color, coords, dim):
         super().__init__()
         self.image = pygame.Surface(dim)
+        self.color = color
         self.rect = self.image.get_rect(center = coords)
-        self.window = window
         self.coords = coords
         self.image.fill(color)
     
     def update(self):
         self.rect = self.image.get_rect(center = self.coords)
+
+    def change_color(self, color):
+        self.color = color
