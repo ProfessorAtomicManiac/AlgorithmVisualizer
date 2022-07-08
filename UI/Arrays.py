@@ -67,7 +67,7 @@ class Array():
        coords = where the array will be placed in (x, y) form
        end = the maximum possible value of the array (will sort from 1-end)
     '''
-    def __init__(self, array_group, dim, coords, end, delay = 0.000001):
+    def __init__(self, array_group, dim, coords, end, delay = 0.01):
         self.array_group = array_group
         self.list = []
         self.visited = []
@@ -101,6 +101,11 @@ class Array():
         self.visited[index] = True
         time.sleep(self.delay)
         return self.list[index]
+
+    def replace(self, index, val):
+        self.visited[index] = True
+        time.sleep(self.delay)
+        self.list[index] = val
     
     def swap(self, ind1, ind2):
         if (ind1 == ind2):
@@ -111,7 +116,6 @@ class Array():
         temp = self.list[ind1]
         self.list[ind1] = self.list[ind2]
         self.list[ind2] = temp
-        assert temp != self.list[ind1]
 
     def length(self):
         return len(self.list)

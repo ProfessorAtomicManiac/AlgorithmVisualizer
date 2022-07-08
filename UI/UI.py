@@ -129,7 +129,7 @@ class SortingActions():
         #print("{},{}  {},{}".format(self.SORTING_WIDTH, self.SORTING_HEIGHT, self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
         self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), self.array_length)
 
-    def display_sorting(self, window, screen_group, options_screen_group):
+    def display_sorting(self, window, screen_group, options_screen_group, scroll_group):
         if (window.screen == Wrapper.Screen.SORTING_SCREEN and (not window.screen_change and not window.window_size_change)):
             return
         # Change Screen
@@ -148,11 +148,32 @@ class SortingActions():
         screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), self.array.shuffle, Wrapper.Screen.SORTING_SCREEN, window))
         screen_group.add(Wrapper.TextButton("Reset", ((5*window.window.get_size()[0]/6), 270), self.array.reset, Wrapper.Screen.SORTING_SCREEN, window))
 
-        def sort():
+        def selection_sort():
             selection_sort = Wrapper.add_args_to_func(Sorting.selection_sort, self.array, window.event)
             sorting_thread = threading.Thread(target=selection_sort)
             return sorting_thread.start()
-        screen_group.add(Wrapper.TextButton("Sort", ((5*window.window.get_size()[0]/6), 340), sort, Wrapper.Screen.SORTING_SCREEN, window))
+
+        def quick_sort():
+            quick_sort = Wrapper.add_args_to_func(Sorting.quick_sort, self.array, window.event, 0, self.array.length())
+            sorting_thread = threading.Thread(target=quick_sort)
+            return sorting_thread.start()
+        
+        def merge_sort():
+            merge_sort = Wrapper.add_args_to_func(Sorting.merge_sort, self.array, window.event, 0, self.array.length())
+            sorting_thread = threading.Thread(target=merge_sort)
+            return sorting_thread.start()
+
+        def heap_sort():
+            heap_sort = Wrapper.add_args_to_func(Sorting.heap_sort, self.array, window.event)
+            sorting_thread = threading.Thread(target=heap_sort)
+            return sorting_thread.start()
+        selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, window)
+        quick_sort_button = Wrapper.ScrollButton("Quick Sort", quick_sort, Wrapper.Screen.SORTING_SCREEN, window)
+        merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, window)
+        heap_sort_button = Wrapper.ScrollButton("Heap Sort", heap_sort, Wrapper.Screen.SORTING_SCREEN, window)
+        buttons = (selection_sort_button, quick_sort_button, merge_sort_button, heap_sort_button)
+        scroll_bar = (Wrapper.ScrollBar(((5*window.window.get_size()[0]/6), 340), (200, 50), buttons, scroll_group, window))
+
         # Options button
         OptionActions.display_options_button(window, screen_group, options_screen_group)
 

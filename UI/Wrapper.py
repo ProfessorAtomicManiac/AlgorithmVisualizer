@@ -205,6 +205,108 @@ class TextButton(pygame.sprite.Sprite):
         self.player_input()
         self.slide()
         self.destroy()
+
+class ScrollBar():
+
+    '''@buttons = ScrollButton classes that will act like buttons'''
+    def __init__(self, coords, dim, buttons, scroll_group, window, max_height = 1200):
+        self.coords = coords
+        self.dim = dim
+        self.scroll_group = scroll_group
+        self.buttons = buttons
+        self.window = window
+        self.max_height = max_height
+
+        self.extended = False
+
+        self.selected = buttons[0]
+        TRIANGLE_BUTTON_WIDTH = 25
+        TRIANGLE_BUTTON_HEIGHT = dim[1]
+        triangle_button_1 = pygame.image.load('Button/triangle_button.png').convert_alpha()
+        triangle_button_1 = pygame.transform.scale(triangle_button_1, (TRIANGLE_BUTTON_WIDTH, TRIANGLE_BUTTON_HEIGHT))
+        triangle_button_2 = pygame.image.load('Button/triangle_button_hovering.png').convert_alpha()
+        triangle_button_2 = pygame.transform.scale(triangle_button_2, (TRIANGLE_BUTTON_WIDTH, TRIANGLE_BUTTON_HEIGHT))
+        self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, Screen.SORTING_SCREEN, window)
+        scroll_group.add(self.scroll_button)
+        buttons[0].setCoords(coords)
+        for button in buttons:
+            button.setDim(dim)
+        scroll_group.add(self.selected)
+
+    def toggle(self):
+        self.extended = not self.extended
+        if (self.extended):
+            for i in range(len(self.buttons)):
+                if (self.coords[1] + i*self.dim[1] > self.max_height):
+                    return
+                self.buttons[i].setCoords((self.coords[0], self.coords[1] + i*self.dim[1]))
+                self.scroll_group.add(self.buttons[i])
+        else:
+            if (len(self.scroll_group) > 2):
+                self.scroll_group.empty()
+                self.scroll_group.add(self.scroll_button)
+                self.scroll_group.add(self.selected)
+                
+    
+
+class ScrollButton(pygame.sprite.Sprite):
+    '''This is a scroll button class
+       Generally default: #415A77
+              hovering: #778DA9
+              text: #E0E1DD
+              Width: 200, Height: 50, Corners Radius: 11
+              Bold, Size: 26, 
+              Font: Ubuntu (haha get it?)
+       @text = the text that will be displayed at the center of the button
+       @coords = the icon will be centered at those coords
+       @function = the function that will be called when the button is pressed
+       @screen = what screen the button will stay on (will do a sliding animation when its the wrong screen)
+       @window = the Window class object
+       @will_slide = whether the button will slide onto the screen or just appear
+       @options = whether the button is part of the options menu or not (There was a bug where when you have the options screen
+       you can still use buttons on the main screen)
+       @args = arguments to pass to the function
+    '''
+
+    def __init__(self, text, function, screen, window):
+        super().__init__()
+        ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 26)
+        self.text = ubuntu_font.render(text, True, "#E0E1DD")
+        self.dim = ()
+        self.coords = ()
+        self.image = pygame.Surface((0, 0))
+        self.rect = self.image.get_rect()
+        self.function = function
+        self.screen = screen
+        self.window = window
+        self.handled = False
+
+    def setDim(self, dim):
+        self.dim = dim
+
+    def setCoords(self, coords):
+        self.coords = coords
+
+    def player_input(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            if not pygame.mouse.get_pressed()[0]:
+                self.handled = False
+            if pygame.mouse.get_pressed()[0] and (not self.window.options_screen) and not self.handled:
+                self.function()
+                self.handled = True
+            else:
+                self.image.fill("#778DA9")
+        else:
+            self.image.fill("#415A77")
+
+    def update(self):
+        #self.window.window.blit(self.text, (self.rect.x + self.width/2, self.rect.y + self.height/2))
+        self.image = pygame.Surface(self.dim)
+        self.rect = self.image.get_rect(center = self.coords)
+        self.textRect = self.text.get_rect(center = self.coords)
+        self.window.window.blit(self.text, self.textRect)
+        self.player_input()
+
     
 class Background(pygame.sprite.Sprite):
     # TODO: Make background slide
