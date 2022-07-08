@@ -1,12 +1,13 @@
 import enum
+import threading
 import pygame
 
 '''Contains code for various objects that are used frequently as sprites'''
 def add_args_to_func(func, *args, **kwargs):
-        #@func.wraps(inner) # This is optional TODO: Fix and understand wut this is
-        def inner():
-            return func(*args, **kwargs)
-        return inner
+    #@func.wraps(inner) # This is optional TODO: Fix and understand wut this is
+    def inner():
+        return func(*args, **kwargs)
+    return inner
 
 class Screen(enum.Enum):
     '''Enum for which screen the window is on
@@ -35,7 +36,8 @@ class Window():
         self.screen_change = screen_change
         self.options_screen = False
         self.window_size_change = window_size_change
-
+        self.mouse_button_down = False
+        self.event = threading.Event()
 
     def update(self):
         self.window.blit(self.background, (0, 0))
@@ -100,11 +102,15 @@ class Button(pygame.sprite.Sprite):
         self.screen = screen
         self.window = window
         self.options = options
+        self.handled = False
 
     def player_input(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
-            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen):
+            if not pygame.mouse.get_pressed()[0]:
+                self.handled = False
+            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled:
                 self.function()
+                self.handled = True
             else:
                 self.image = self.images[1]
         else:
@@ -165,11 +171,15 @@ class TextButton(pygame.sprite.Sprite):
         self.accel = 0
         self.width = 200
         self.height = 50
+        self.handled = False
 
     def player_input(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
-            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen):
+            if not pygame.mouse.get_pressed()[0]:
+                self.handled = False
+            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled:
                 self.function()
+                self.handled = True
             else:
                 self.image = pygame.image.load("Button/button_hovering.png").convert_alpha()
         else:

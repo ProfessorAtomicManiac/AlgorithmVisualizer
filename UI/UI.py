@@ -1,7 +1,9 @@
 import time
+import threading
 import pygame
 from UI.Arrays import Array
 import UI.Wrapper as Wrapper
+import Algorithms.Sorting as Sorting
 
 ''' This should only have code concerning the UI duh
     Specifically the display of screens, and functions for input (button presses)
@@ -118,7 +120,7 @@ class SortingActions():
         #CONFIG_Y = SORTING_HEIGHT + 2*SORTING_MARGIN_Y
         self.CONFIG_HEIGHT = self.SORTING_HEIGHT
 
-        self.array_length = 512
+        self.array_length = 64
 
         self.SORTING_X = (window.window.get_size()[0] - self.CONFIG_WIDTH - 2*self.MARGIN_X)/2 + self.MARGIN_X
         self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
@@ -145,7 +147,12 @@ class SortingActions():
         
         screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), self.array.shuffle, Wrapper.Screen.SORTING_SCREEN, window))
         screen_group.add(Wrapper.TextButton("Reset", ((5*window.window.get_size()[0]/6), 270), self.array.reset, Wrapper.Screen.SORTING_SCREEN, window))
-        
+
+        def sort():
+            selection_sort = Wrapper.add_args_to_func(Sorting.selection_sort, self.array, window.event)
+            sorting_thread = threading.Thread(target=selection_sort)
+            return sorting_thread.start()
+        screen_group.add(Wrapper.TextButton("Sort", ((5*window.window.get_size()[0]/6), 340), sort, Wrapper.Screen.SORTING_SCREEN, window))
         # Options button
         OptionActions.display_options_button(window, screen_group, options_screen_group)
 

@@ -20,15 +20,17 @@ def main(fps):
             if event.type == pygame.VIDEORESIZE:
                 width, height = event.size
                 window = Wrapper.Window(width, height, window.screen, False, True)
+
             if event.type == pygame.QUIT:
+                window.event.set()
                 pygame.quit()
                 exit()
 
         # apparentally python has no switch cases?
         # TODO: either update to python 3.10 or create a dictionary
+        # TODO: MAYBE DO SHOOT RElease
         # This should only have logic for what to do when its on screen x or something like that
         if (window.screen == Wrapper.Screen.MAIN_MENU and window.window_size_change):
-            print("window changes size")
             UI.MainMenuActions.display_main_menu(window, False, screen_group, options_screen_group)
             window.window_size_change = False
         elif (window.screen == Wrapper.Screen.MAIN_MENU and window.screen_change):
@@ -38,6 +40,10 @@ def main(fps):
             sorting_actions = UI.SortingActions(window, sorting_group)
             sorting_actions.display_sorting(window, screen_group, options_screen_group)
             window.screen_change = False
+        # TODO: make screen size change work for sorting screen
+        elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.window_size_change):
+            UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
+            window.window_size_change = False
 
         # This should update everything (Logic to update everything)
         window.update() # Clears the screen
