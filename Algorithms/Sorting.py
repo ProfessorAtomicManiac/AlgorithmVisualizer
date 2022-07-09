@@ -8,8 +8,8 @@ def selection_sort(arr, event):
         for j in range(i+1, arr.length()):
             if arr.get(j) < arr.get(min):
                 min = j
-                if (event.is_set()):
-                    return
+            if (event.is_set()):
+                return
         arr.swap(i, min)
     finish(arr)
 
@@ -22,8 +22,8 @@ def quick_sort(arr, event, begin, end, isFinished = False):
             if arr.get(i) < arr.get(pivot):
                 arr.swap(i, low)
                 low += 1
-                if (event.is_set()):
-                    return
+            if (event.is_set()):
+                return
 
         arr.swap(low, pivot)
         quick_sort(arr, event, begin, low)
@@ -48,16 +48,22 @@ def merge_sort(arr, event, begin, end, isFinished = False):
             else:
                 arr.replace(k, arrR[j])
                 j += 1
+            if (event.is_set()):
+                return
             k += 1
 
         while i < len(arrL):
             arr.replace(k, arrL[i])
             i += 1
             k += 1
+            if (event.is_set()):
+                return
         while j < len(arrR):
             arr.replace(k, arrR[j])
             j += 1
             k += 1
+            if (event.is_set()):
+                return
     if (isFinished):
         finish(arr)
 

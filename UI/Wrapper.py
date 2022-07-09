@@ -1,7 +1,8 @@
 import enum
-from queue import Queue
 import threading
 import time
+from queue import Queue
+
 import pygame
 
 '''Contains code for various objects that are used frequently as sprites'''
@@ -9,6 +10,13 @@ def add_args_to_func(func, *args, **kwargs):
     #@func.wraps(inner) # This is optional TODO: Fix and understand wut this is
     def inner():
         return func(*args, **kwargs)
+    return inner
+
+'''Runs multiple functions sequentially'''
+def sequential_functions(*funcs):
+    def inner():
+        for func in funcs:
+            func()
     return inner
 
 class Screen(enum.Enum):
@@ -341,7 +349,7 @@ class Midi():
     def __init__(self):
         port = pygame.midi.get_default_output_id()
         self.player = pygame.midi.Output(port, 0)
-        self.player.set_instrument(0) # Grand_piano
+        self.player.set_instrument(13) # Grand_piano
 
         self.notes = []
         for i in range(1, 128):

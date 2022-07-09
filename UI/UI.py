@@ -1,9 +1,11 @@
-import time
 import threading
-import pygame
-from UI.Arrays import Array
-import UI.Wrapper as Wrapper
+import time
+
 import Algorithms.Sorting as Sorting
+import pygame
+
+import UI.Wrapper as Wrapper
+from UI.Arrays import Array
 
 ''' This should only have code concerning the UI duh
     Specifically the display of screens, and functions for input (button presses)
@@ -91,6 +93,7 @@ class OptionActions():
        @args[1] = screen_group
     '''
     def press_main_menu(window, options_group):
+        window.event.set()
         OptionActions.close_options(window, options_group)
         window.screen = Wrapper.Screen.MAIN_MENU
         window.screen_change = True
@@ -144,29 +147,46 @@ class SortingActions():
         #print(CONFIG_HEIGHT)
         screen_group.add(Wrapper.Background("#1B263B", (self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT)))
         #screen_group.add(Wrapper.Background("#1B263B", (CONFIG_X, CONFIG_Y), (CONFIG_WIDTH, CONFIG_HEIGHT)))
-        
-        screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), self.array.shuffle, Wrapper.Screen.SORTING_SCREEN, window))
-        screen_group.add(Wrapper.TextButton("Reset", ((5*window.window.get_size()[0]/6), 270), self.array.reset, Wrapper.Screen.SORTING_SCREEN, window))
 
         def selection_sort():
-            selection_sort = Wrapper.add_args_to_func(Sorting.selection_sort, self.array, window.event)
-            sorting_thread = threading.Thread(target=selection_sort)
-            return sorting_thread.start()
+            selection_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.selection_sort, self.array, window.event), sort_done)
+            set_sorting_thread(threading.Thread(target=selection_sort))
+            return self.sorting_thread.start()
 
         def quick_sort():
-            quick_sort = Wrapper.add_args_to_func(Sorting.quick_sort, self.array, window.event, 0, self.array.length(), True)
-            sorting_thread = threading.Thread(target=quick_sort)
-            return sorting_thread.start()
+            quick_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.quick_sort, self.array, window.event, 0, self.array.length(), True), sort_done)
+            set_sorting_thread(threading.Thread(target=quick_sort))
+            return self.sorting_thread.start()
         
         def merge_sort():
-            merge_sort = Wrapper.add_args_to_func(Sorting.merge_sort, self.array, window.event, 0, self.array.length(), True)
-            sorting_thread = threading.Thread(target=merge_sort)
-            return sorting_thread.start()
+            merge_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.merge_sort, self.array, window.event, 0, self.array.length(), True), sort_done)
+            set_sorting_thread(threading.Thread(target=merge_sort))
+            return self.sorting_thread.start()
 
         def heap_sort():
-            heap_sort = Wrapper.add_args_to_func(Sorting.heap_sort, self.array, window.event)
-            sorting_thread = threading.Thread(target=heap_sort)
-            return sorting_thread.start()
+            heap_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.heap_sort, self.array, window.event), sort_done)
+            set_sorting_thread(threading.Thread(target=heap_sort))
+            return self.sorting_thread.start()
+
+        def set_sorting_thread(thread):
+            if self.sorting_thread is not None:
+                window.event.set()
+                self.sorting_thread.join()
+            window.event.clear()
+            self.sorting_thread = thread
+
+        def on_reset():
+            window.event.set()
+
+        def sort_done():
+            self.sorting_thread = None
+            window.event.set()
+
+        screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), self.array.shuffle, Wrapper.Screen.SORTING_SCREEN, window))
+        screen_group.add(Wrapper.TextButton("Reset", ((5*window.window.get_size()[0]/6), 270), Wrapper.sequential_functions(self.array.reset, on_reset), Wrapper.Screen.SORTING_SCREEN, window))
+
+        self.sorting_thread = None
+
         selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, window)
         quick_sort_button = Wrapper.ScrollButton("Quick Sort", quick_sort, Wrapper.Screen.SORTING_SCREEN, window)
         merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, window)
