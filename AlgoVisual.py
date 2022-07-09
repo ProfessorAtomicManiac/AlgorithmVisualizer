@@ -2,11 +2,15 @@ import pygame
 from sys import exit
 import UI.Wrapper as Wrapper
 import UI.UI as UI
+import pygame.midi
 
 def main(fps):
     '''Equivalent of public static void main(String[] args)'''
     pygame.init()
+    pygame.midi.init()
+
     window = Wrapper.Window(1200, 600, Wrapper.Screen.NONE, True, False)
+    midi = Wrapper.Midi()
     screen_group = pygame.sprite.Group()
     options_screen_group = pygame.sprite.Group()
     sorting_group = pygame.sprite.Group()
@@ -14,7 +18,6 @@ def main(fps):
     UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
 
     while True:
-
         # General Events should be placed here
         for event in pygame.event.get():
             # If window changes size
@@ -24,6 +27,8 @@ def main(fps):
 
             if event.type == pygame.QUIT:
                 window.event.set()
+                del midi
+                pygame.midi.quit()
                 pygame.quit()
                 exit()
 
@@ -38,7 +43,7 @@ def main(fps):
             UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
             window.screen_change = False
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.screen_change):
-            sorting_actions = UI.SortingActions(window, sorting_group)
+            sorting_actions = UI.SortingActions(window, sorting_group, midi)
             sorting_actions.display_sorting(window, screen_group, options_screen_group, scroll_group)
             window.screen_change = False
         # TODO: make screen size change work for sorting screen
@@ -62,6 +67,7 @@ def main(fps):
 
         # Must have to update
         pygame.display.update()
+        midi.update()
         window.clock.tick(fps)
         
 

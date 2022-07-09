@@ -106,7 +106,7 @@ class SortingActions():
         args[2] = sorting_group
     '''
     '''This class has constructor so we can construct one array that all methods can access'''
-    def __init__(self, window, sorting_group):
+    def __init__(self, window, sorting_group, midi):
         # Constants
         self.TITLE_Y = 50
         # Margins for all boxes
@@ -127,7 +127,7 @@ class SortingActions():
         self.sorting_group = sorting_group
         sorting_group.empty()
         #print("{},{}  {},{}".format(self.SORTING_WIDTH, self.SORTING_HEIGHT, self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
-        self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), self.array_length)
+        self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), self.array_length, midi)
 
     def display_sorting(self, window, screen_group, options_screen_group, scroll_group):
         if (window.screen == Wrapper.Screen.SORTING_SCREEN and (not window.screen_change and not window.window_size_change)):
@@ -154,12 +154,12 @@ class SortingActions():
             return sorting_thread.start()
 
         def quick_sort():
-            quick_sort = Wrapper.add_args_to_func(Sorting.quick_sort, self.array, window.event, 0, self.array.length())
+            quick_sort = Wrapper.add_args_to_func(Sorting.quick_sort, self.array, window.event, 0, self.array.length(), True)
             sorting_thread = threading.Thread(target=quick_sort)
             return sorting_thread.start()
         
         def merge_sort():
-            merge_sort = Wrapper.add_args_to_func(Sorting.merge_sort, self.array, window.event, 0, self.array.length())
+            merge_sort = Wrapper.add_args_to_func(Sorting.merge_sort, self.array, window.event, 0, self.array.length(), True)
             sorting_thread = threading.Thread(target=merge_sort)
             return sorting_thread.start()
 

@@ -1,3 +1,7 @@
+def finish(arr):
+    for i in range(0, arr.length()):
+        arr.get(i)
+
 def selection_sort(arr, event):
     for i in range(0, arr.length()):
         min = i
@@ -7,8 +11,9 @@ def selection_sort(arr, event):
                 if (event.is_set()):
                     return
         arr.swap(i, min)
+    finish(arr)
 
-def quick_sort(arr, event, begin, end):
+def quick_sort(arr, event, begin, end, isFinished = False):
     if (begin < end):
         pivot = end-1
         low = begin
@@ -23,8 +28,11 @@ def quick_sort(arr, event, begin, end):
         arr.swap(low, pivot)
         quick_sort(arr, event, begin, low)
         quick_sort(arr, event, low+1, end)
+    if isFinished:
+        finish(arr)
 
-def merge_sort(arr, event, begin, end):
+
+def merge_sort(arr, event, begin, end, isFinished = False):
     if (begin+1 < end):
         mid = begin + ((end-begin)+1)//2
         merge_sort(arr, event, begin, mid)
@@ -50,6 +58,8 @@ def merge_sort(arr, event, begin, end):
             arr.replace(k, arrR[j])
             j += 1
             k += 1
+    if (isFinished):
+        finish(arr)
 
 class Heap():
 
@@ -142,3 +152,5 @@ def heap_sort(arr, event):
         i -= 1
         if (event.is_set()):
             return
+    finish(arr)
+    

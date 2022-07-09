@@ -67,7 +67,7 @@ class Array():
        coords = where the array will be placed in (x, y) form
        end = the maximum possible value of the array (will sort from 1-end)
     '''
-    def __init__(self, array_group, dim, coords, end, delay = 0.01):
+    def __init__(self, array_group, dim, coords, end, midi, delay = 0.01):
         self.array_group = array_group
         self.list = []
         self.visited = []
@@ -78,6 +78,7 @@ class Array():
         self.coords = coords
         self.end = end
         self.delay = delay
+        self.midi = midi
         self.createList()
         
     def createList(self):
@@ -99,19 +100,23 @@ class Array():
 
     def get(self, index):
         self.visited[index] = True
+        self.midi.play(int(self.list[index]/self.end*127))
         time.sleep(self.delay)
         return self.list[index]
 
     def replace(self, index, val):
         self.visited[index] = True
+        self.midi.play(int(self.list[index]/self.end*127))
         time.sleep(self.delay)
         self.list[index] = val
-    
+
     def swap(self, ind1, ind2):
         if (ind1 == ind2):
             return
         self.visited[ind1] = True
         self.visited[ind2] = True
+        self.midi.play(int(self.list[ind1]/self.end*127))
+        self.midi.play(int(self.list[ind2]/self.end*127))
         time.sleep(self.delay)
         temp = self.list[ind1]
         self.list[ind1] = self.list[ind2]

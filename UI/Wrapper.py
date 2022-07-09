@@ -1,5 +1,7 @@
 import enum
+from queue import Queue
 import threading
+import time
 import pygame
 
 '''Contains code for various objects that are used frequently as sprites'''
@@ -329,3 +331,31 @@ class Background(pygame.sprite.Sprite):
 
     def change_color(self, color):
         self.color = color
+
+class Midi():
+
+    C = 74
+    MAX = 127
+    brief = .5
+
+    def __init__(self):
+        port = pygame.midi.get_default_output_id()
+        self.player = pygame.midi.Output(port, 0)
+        self.player.set_instrument(0) # Grand_piano
+
+        self.notes = []
+        for i in range(1, 128):
+            self.notes.append(False)
+        # Constants
+        self.brief = .5
+        self.MAX = 127
+        self.queue = Queue()
+
+    def play(self, note, volume = MAX, length = brief):
+        self.player.note_on(note, volume)
+        self.queue.put((note, volume))
+
+    def update(self):
+        if (not self.queue.empty()):
+           pop = self.queue.get()
+           self.player.note_off(pop[0], pop[1])
