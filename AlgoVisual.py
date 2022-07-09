@@ -1,8 +1,11 @@
-import pygame
 from sys import exit
-import UI.Wrapper as Wrapper
-import UI.UI as UI
+
+import pygame
 import pygame.midi
+
+import UI.UI as UI
+import UI.Wrapper as Wrapper
+
 
 def main(fps):
     '''Equivalent of public static void main(String[] args)'''
