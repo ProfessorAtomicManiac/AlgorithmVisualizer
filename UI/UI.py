@@ -172,7 +172,6 @@ class SortingActions():
             if self.sorting_thread is not None:
                 window.event.set()
                 self.sorting_thread.join()
-                window.sorting_thread = None
             window.event.clear()
             self.sorting_thread = thread
 
