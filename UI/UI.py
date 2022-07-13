@@ -153,6 +153,11 @@ class SortingActions():
             set_sorting_thread(threading.Thread(target=selection_sort))
             return self.sorting_thread.start()
 
+        def insertion_sort():
+            insertion_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.insertion_sort, self.array, window.event), sort_done)
+            set_sorting_thread(threading.Thread(target=insertion_sort))
+            return self.sorting_thread.start()
+
         def quick_sort():
             quick_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.quick_sort, self.array, window.event, 0, self.array.length(), True), sort_done)
             set_sorting_thread(threading.Thread(target=quick_sort))
@@ -182,16 +187,17 @@ class SortingActions():
             self.sorting_thread = None
             window.event.set()
 
-        screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), self.array.shuffle, Wrapper.Screen.SORTING_SCREEN, window))
+        screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), Wrapper.sequential_functions(self.array.shuffle, on_reset), Wrapper.Screen.SORTING_SCREEN, window))
         screen_group.add(Wrapper.TextButton("Reset", ((5*window.window.get_size()[0]/6), 270), Wrapper.sequential_functions(self.array.reset, on_reset), Wrapper.Screen.SORTING_SCREEN, window))
 
         self.sorting_thread = None
 
         selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, window)
+        insertion_sort_button = Wrapper.ScrollButton("Insertion Sort", insertion_sort, Wrapper.Screen.SORTING_SCREEN, window)
         quick_sort_button = Wrapper.ScrollButton("Quick Sort", quick_sort, Wrapper.Screen.SORTING_SCREEN, window)
         merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, window)
         heap_sort_button = Wrapper.ScrollButton("Heap Sort", heap_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        buttons = (selection_sort_button, quick_sort_button, merge_sort_button, heap_sort_button)
+        buttons = (selection_sort_button, quick_sort_button, merge_sort_button, heap_sort_button, insertion_sort_button)
         scroll_bar = (Wrapper.ScrollBar(((5*window.window.get_size()[0]/6), 340), (200, 50), buttons, scroll_group, window))
 
         # Options button

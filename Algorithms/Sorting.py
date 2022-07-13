@@ -1,7 +1,13 @@
+''' Will do a "glissando" up the array indexes when the array is done sorting
+'''
 def finish(arr):
     for i in range(0, arr.length()):
         arr.get(i)
 
+''' Selection Sort - O(n^2)
+    The algorithm will iterate through the entire array to find the minimum, then replace the lowest unsorted index with that element
+    This repeats until the entire array is sorted
+'''
 def selection_sort(arr, event):
     for i in range(0, arr.length()):
         min = i
@@ -13,6 +19,28 @@ def selection_sort(arr, event):
         arr.swap(i, min)
     finish(arr)
 
+''' Inerstion Sort - O(n^2)
+    For every index i from 1 to arr.length(), it will iterate backwards in the indexes of the already previously sorted array
+    When it finds an element that is less than the element at index i, it will replace it
+    As it iterates to find that element, it will shift all elements greater than it to the right
+'''
+def insertion_sort(arr, event):
+    for i in range(1, arr.length()):
+        key = arr.get(i)
+        j = i-1
+        while j >= 0 and key < arr.get(j):
+            arr.replace(j+1, arr.get(j))
+            j -= 1
+            if (event.is_set()):
+                return
+        arr.replace(j+1, key)
+    finish(arr)
+
+''' Quick Sort - O(nlogn), O(n^2) if the array is sorted
+    All elements in the array will be set to the left of the rightmost element if its less than the rightmost element
+    Same with the right side
+    This repeats until the array is sorted
+'''
 def quick_sort(arr, event, begin, end, isFinished = False):
     if (begin < end):
         pivot = end-1
@@ -31,7 +59,13 @@ def quick_sort(arr, event, begin, end, isFinished = False):
     if isFinished:
         finish(arr)
 
-
+''' Merge Sort - O(nlogn)
+    The array will be split into two even parts (not exactly even if the array has an odd number of elements)
+    This continues until the splitted array is of length 1
+    The splitted arrays will be merged together, where the smallest elements to the biggest elements of each splitted array will be compared to each other
+    and merged into a single array
+    This continues until the entire array is sorted
+'''
 def merge_sort(arr, event, begin, end, isFinished = False):
     if (begin+1 < end):
         mid = begin + ((end-begin)+1)//2
@@ -67,6 +101,26 @@ def merge_sort(arr, event, begin, end, isFinished = False):
     if (isFinished):
         finish(arr)
 
+''' Heap Sort (nlogn) - Also the implementation of the Priority Queue using the Heap Data Structure
+    All elements of the array will be inserted into what is known as a "Heap".
+    A Heap is a data structure that is a special form of a binary tree that satisfies the condition that
+    each node's children must be smaller than the node itself
+
+    When an element is inserted into the heap, it will be added as the last element of the tree, in other words, it is the last leaf
+    Then the algorithm will perform an "upheap" operation, where the inserted node will be compared to its parent
+    If the parent is smaller than the node, the two nodes will swap.
+    This process will continue until either it finds a parent that is bigger than the node, or the node becomes the root
+    This operation takes O(log n) time, since we only iterate up to the root in the worst possible case, whose height is log n
+
+    After all elements are inserted, we will remove the maximum element, which should be the root of the binary tree
+    The root will be swapped with the outermost leaf of the tree, and then it will be removed.
+    In order to satisfy the heap property, we must perform a "downheap" on the root, as the root is no longer tha maximum
+    If either the left or right child is bigger than the node, than it will be swapped (the bigger of the children)
+    This will keep going until either the node has no more children, or its children are smaller than the node
+    This operation takes O(log n) time, since we only iterate down to the leaf in the worse possible case, whose height is log n
+
+    tl;dr think of this as a more efficient "selection sort"
+'''
 class Heap():
 
     def __init__(self, arr, event):
