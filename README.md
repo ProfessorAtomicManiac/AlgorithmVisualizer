@@ -2,10 +2,10 @@
 Work in progress. Using pygame to do all the work (although I'm still pretty unfamiliar with python in general)<br>
 Hopefully when its done it will have the following features:<br>
 -Visualize sorting algorithms and make it make cool sounds<br>
-  -Few O(n^2) algorithms<br>
-  -Mergesort and Quicksort<br>
-  -Heapsort<br>
-  -Counting Sort and other noncomparison O(n) sorts? (Not sure how to visualize that)<br>
+&emsp;-Few O(n^2) algorithms<br>
+&emsp;-Mergesort and Quicksort<br>
+&emsp;-Heapsort<br>
+&emsp;-Counting Sort and other noncomparison O(n) sorts? (Not sure how to visualize that)<br>
 -Visualize graph algorithms on a grid or a graph with nodes<br>
   -DFS and BFS<br>
   -Shortest paths/Minimum spanning Tree (Djistra's, Prim's, Kruskal's)<br>
