@@ -218,8 +218,17 @@ class TextButton(pygame.sprite.Sprite):
 
 class ScrollBar():
 
-    '''@buttons = ScrollButton classes that will act like buttons'''
-    def __init__(self, coords, dim, buttons, scroll_group, window, max_height = 1200):
+    ''' Implements a drop down menu with a scroll bar
+        The top (chosen) button will always be visible along with a drop-down button (triangle button)
+        @coords = Coordinates of the center of the top-most button that will always be visible
+        @dim = Dimensions of the buttons
+        @buttons = ScrollButton classes that will act like buttons
+        @scroll_group = Sprite group needed to display the elements
+        @window = Window class object
+        @max_height = the drop down menu will only expand to this height
+        
+    '''
+    def __init__(self, coords, dim, buttons, scroll_group, window, max_height = 200):
         self.coords = coords
         self.dim = dim
         self.scroll_group = scroll_group
@@ -229,7 +238,6 @@ class ScrollBar():
 
         self.extended = False
 
-        self.selected = buttons[0]
         TRIANGLE_BUTTON_WIDTH = 25
         TRIANGLE_BUTTON_HEIGHT = dim[1]
         triangle_button_1 = pygame.image.load('Button/triangle_button.png').convert_alpha()
@@ -238,18 +246,36 @@ class ScrollBar():
         triangle_button_2 = pygame.transform.scale(triangle_button_2, (TRIANGLE_BUTTON_WIDTH, TRIANGLE_BUTTON_HEIGHT))
         self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, Screen.SORTING_SCREEN, window)
         scroll_group.add(self.scroll_button)
-        buttons[0].setCoords(coords)
+        
+        self.selected = ScrollButton("Choose Sort", None, window.screen, window)
+        self.selected.setCoords(coords)
+        self.selected.setDim(dim)
         for button in buttons:
             button.setDim(dim)
         scroll_group.add(self.selected)
+
+    def button_checks(self):
+        # inefficient way of checking if buttons were pressed (TODO : Find faster way?)
+        if (self.extended):
+            for sprite in self.scroll_group.sprites():
+                if (type(sprite) == ScrollButton and sprite.is_chosen and sprite != self.selected):
+                    self.selected.is_chosen = False
+                    self.selected.kill()
+                    sprite.is_chosen = False
+                    self.selected = sprite.copy()
+                    self.selected.setCoords(self.coords)
+                    self.selected.setDim(self.dim)
+                    self.selected.is_chosen = True
+                    self.toggle()
+                    return
 
     def toggle(self):
         self.extended = not self.extended
         if (self.extended):
             for i in range(len(self.buttons)):
-                if (self.coords[1] + i*self.dim[1] > self.max_height):
+                if ((i+1)*self.dim[1] > self.max_height):
                     return
-                self.buttons[i].setCoords((self.coords[0], self.coords[1] + i*self.dim[1]))
+                self.buttons[i].setCoords((self.coords[0], self.coords[1] + (i+1)*self.dim[1]))
                 self.scroll_group.add(self.buttons[i])
         else:
             if (len(self.scroll_group) > 2):
@@ -276,12 +302,14 @@ class ScrollButton(pygame.sprite.Sprite):
        @options = whether the button is part of the options menu or not (There was a bug where when you have the options screen
        you can still use buttons on the main screen)
        @args = arguments to pass to the function
-    '''
 
+       @is_chosen - if the button is selected
+    '''
     def __init__(self, text, function, screen, window):
         super().__init__()
         ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 26)
         self.text = ubuntu_font.render(text, True, "#E0E1DD")
+        self.copy_text = text # Used for duplicating purposes
         self.dim = ()
         self.coords = ()
         self.image = pygame.Surface((0, 0))
@@ -290,6 +318,12 @@ class ScrollButton(pygame.sprite.Sprite):
         self.screen = screen
         self.window = window
         self.handled = False
+
+        self.is_chosen = False
+
+    def copy(self):
+        copy = ScrollButton(self.copy_text, self.function, self.screen, self.window)
+        return copy
 
     def setDim(self, dim):
         self.dim = dim
@@ -302,7 +336,10 @@ class ScrollButton(pygame.sprite.Sprite):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
             if pygame.mouse.get_pressed()[0] and (not self.window.options_screen) and not self.handled:
-                self.function()
+                if (self.function is not None and self.is_chosen):
+                    self.function()
+                elif (not self.is_chosen):
+                    self.is_chosen = True
                 self.handled = True
             else:
                 self.image.fill("#778DA9")

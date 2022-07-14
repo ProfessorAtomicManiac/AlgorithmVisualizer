@@ -198,10 +198,12 @@ class SortingActions():
         merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, window)
         heap_sort_button = Wrapper.ScrollButton("Heap Sort", heap_sort, Wrapper.Screen.SORTING_SCREEN, window)
         buttons = (selection_sort_button, quick_sort_button, merge_sort_button, heap_sort_button, insertion_sort_button)
-        scroll_bar = (Wrapper.ScrollBar(((5*window.window.get_size()[0]/6), 340), (200, 50), buttons, scroll_group, window))
 
         # Options button
         OptionActions.display_options_button(window, screen_group, options_screen_group)
+
+        scroll_bar = (Wrapper.ScrollBar(((5*window.window.get_size()[0]/6), 340), (200, 50), buttons, scroll_group, window))
+        return scroll_bar
 
     def pressed_sort():
         pass

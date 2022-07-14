@@ -18,6 +18,7 @@ def main(fps):
     options_screen_group = pygame.sprite.Group()
     sorting_group = pygame.sprite.Group()
     scroll_group = pygame.sprite.Group()
+    scroll_bar = None
     UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
 
     while True:
@@ -47,7 +48,7 @@ def main(fps):
             window.screen_change = False
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.screen_change):
             sorting_actions = UI.SortingActions(window, sorting_group, midi)
-            sorting_actions.display_sorting(window, screen_group, options_screen_group, scroll_group)
+            scroll_bar = sorting_actions.display_sorting(window, screen_group, options_screen_group, scroll_group)
             window.screen_change = False
         # TODO: make screen size change work for sorting screen
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.window_size_change):
@@ -64,6 +65,8 @@ def main(fps):
             sorting_group.update()
             scroll_group.draw(window.window)
             scroll_group.update()
+            if (scroll_bar is not None):
+                scroll_bar.button_checks()
         if (window.options_screen):
             options_screen_group.draw(window.window)
             options_screen_group.update()
