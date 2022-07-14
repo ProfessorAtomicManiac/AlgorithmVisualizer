@@ -214,3 +214,62 @@ def heap_sort(arr, event):
             return
     finish(arr)
     
+''' Radix Sort O(d*(n+b)) - where d is the number of digits in base b, n is the number of elements, and b is the base/bucket size
+    I don't feel like typing an explanation just know it has to do with sorting each digit
+    If you want something cool, make the array size big
+    you can do that on line 126 in UI.py. I will eventually add it to the UI don't worry
+'''
+def radix_sort(arr, event):
+    maxValue = 0
+    for i in range(arr.length()):
+        if (arr.get(i) > maxValue):
+            maxValue = arr.get(i)
+
+    # We assume that the digits are > 0 for doubles
+    maxDigit = 1
+    digitValue = 10
+    while (maxValue // digitValue > 0):
+        digitValue*=10
+        maxDigit += 1
+        if (event.is_set()):
+            return
+
+    for i in range(maxDigit):
+        bucketSort(arr, event, i)
+        if (event.is_set()):
+            return
+    finish(arr)
+
+# Does consider negative numbers
+def bucketSort(arr, event, digit):
+    # Range is [-9, 9]
+    length = 19
+    buckets = []
+    for i in range(length):
+        buckets.append([])
+        
+    
+    for i in range(arr.length()):
+        buckets[int(getDigit(arr.get(i), digit) + 9)].append(arr.get(i))
+        if (event.is_set()):
+            return
+
+    index = 0
+    for bucket in buckets:
+        for num in bucket:
+            arr.replace(index, num)
+            index += 1
+            if (event.is_set()):
+                return
+
+    return arr
+
+def getDigit(num, digit):
+    # 0 is units digit, 1 is tens digit, etc
+    if (digit == 0):
+        return num % (10*(digit+1))
+    else:
+        digitValue = 1
+        for i in range(digit):
+            digitValue *= 10
+        return (num/(digitValue))%(10)
