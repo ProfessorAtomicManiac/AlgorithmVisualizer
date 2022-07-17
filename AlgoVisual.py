@@ -52,7 +52,7 @@ def main(fps):
             window.screen_change = False
         # TODO: make screen size change work for sorting screen
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.window_size_change):
-            UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
+            UI.SortingActions.display_sorting(window, True, screen_group, options_screen_group)
             window.window_size_change = False
 
         # This should update everything (Logic to update everything)

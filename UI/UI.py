@@ -123,7 +123,7 @@ class SortingActions():
         #CONFIG_Y = SORTING_HEIGHT + 2*SORTING_MARGIN_Y
         self.CONFIG_HEIGHT = self.SORTING_HEIGHT
 
-        self.array_length = 256
+        self.array_length = 64
 
         self.SORTING_X = (window.window.get_size()[0] - self.CONFIG_WIDTH - 2*self.MARGIN_X)/2 + self.MARGIN_X
         self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
@@ -177,6 +177,11 @@ class SortingActions():
             radix_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.radix_sort, self.array, window.event), sort_done)
             set_sorting_thread(threading.Thread(target=radix_sort))
             return self.sorting_thread.start()
+        
+        def counting_sort():
+            counting_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.counting_sort, self.array, window.event, 0, self.array_length), sort_done)
+            set_sorting_thread(threading.Thread(target=counting_sort))
+            return self.sorting_thread.start()
 
         def set_sorting_thread(thread):
             if self.sorting_thread is not None:
@@ -197,13 +202,14 @@ class SortingActions():
 
         self.sorting_thread = None
 
-        #selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, window)
+        selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, window)
         insertion_sort_button = Wrapper.ScrollButton("Insertion Sort", insertion_sort, Wrapper.Screen.SORTING_SCREEN, window)
         quick_sort_button = Wrapper.ScrollButton("Quick Sort", quick_sort, Wrapper.Screen.SORTING_SCREEN, window)
         merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, window)
         heap_sort_button = Wrapper.ScrollButton("Heap Sort", heap_sort, Wrapper.Screen.SORTING_SCREEN, window)
         radix_sort_button = Wrapper.ScrollButton("Radix Sort", radix_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        buttons = (radix_sort_button, quick_sort_button, merge_sort_button, heap_sort_button, insertion_sort_button)
+        counting_sort_button = Wrapper.ScrollButton("Counting Sort", counting_sort, Wrapper.Screen.SORTING_SCREEN, window)
+        buttons = (radix_sort_button, quick_sort_button, merge_sort_button, heap_sort_button, insertion_sort_button, selection_sort_button, counting_sort_button)
 
         # Options button
         OptionActions.display_options_button(window, screen_group, options_screen_group)

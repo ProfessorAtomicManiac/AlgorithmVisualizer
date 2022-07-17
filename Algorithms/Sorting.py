@@ -273,3 +273,41 @@ def getDigit(num, digit):
         for i in range(digit):
             digitValue *= 10
         return (num/(digitValue))%(10)
+
+''' Counting Sort - O(n + k)
+    min = smallest element in arr
+    max = biggest element in arr
+'''
+def counting_sort(arr, event, min, max):
+    count = []
+    ans = []
+    for i in range(min, max + 1):
+        count.append(0)
+        if (event.is_set()):
+            return
+    
+    for i in range(arr.length()):
+        count[arr.get(i) - min] += 1
+        ans.append(0)
+        if (event.is_set()):
+            return
+
+    for i in range(arr.length()):
+        count[i] += count[i-1]
+        if (event.is_set()):
+            return
+    count.insert(0, 0)
+    count.pop(len(count) - 1)
+
+    for i in range(arr.length()-1, -1, -1):
+        ans[count[arr.get(i)] - 1] = arr.get(i)
+        count[arr.get(i)] -= 1
+        if (event.is_set()):
+            return
+
+    for i in range(arr.length()):
+        arr.replace(i, ans[i])
+        if (event.is_set()):
+            return
+
+    finish(arr)

@@ -27,6 +27,14 @@ class Screen(enum.Enum):
     SORTING_SCREEN = 1
     GRAPH_MENU = 2
 
+class Colors():
+    BACKGROUND_COLOR = "#0D1B2A"
+    BUTTON_COLOR = "#415A77"
+    HOVER_BUTTON_COLOR = "#778DA9"
+    TEXT_COLOR = "#E0E1DD"
+    BACKGROUND_SCROLL_COLOR = BUTTON_COLOR
+    SCROLLBAR_COLOR = TEXT_COLOR
+
 class Window():
     '''Creation of the actual window
        Color Palette: https://coolors.co/palette/0d1b2a-1b263b-415a77-778da9-e0e1dd
@@ -37,12 +45,12 @@ class Window():
     '''
     def __init__(self, width, height, screen, screen_change, window_size_change):
         self.window = pygame.display.set_mode((width, height), pygame.RESIZABLE)
-        self.window.fill("#0D1B2A")
+        self.window.fill(Colors.BACKGROUND_COLOR)
         pygame.display.set_caption("Algorithm Visualizer")
         self.clock = pygame.time.Clock()
         self.screen = screen
         self.background = pygame.Surface((width, height))
-        self.background.fill("#0D1B2A")
+        self.background.fill(Colors.BACKGROUND_COLOR)
         self.screen_change = screen_change
         self.options_screen = False
         self.window_size_change = window_size_change
@@ -216,6 +224,7 @@ class TextButton(pygame.sprite.Sprite):
         self.slide()
         self.destroy()
 
+# TODO : Fixed scuffed position for scrollbar when scrolling thru the first two elements
 class ScrollBar():
 
     ''' Implements a drop down menu with a scroll bar
@@ -225,7 +234,11 @@ class ScrollBar():
         @buttons = ScrollButton classes that will act like buttons
         @scroll_group = Sprite group needed to display the elements
         @window = Window class object
-        @max_height = the drop down menu will only expand to this height
+        @max_height = the drop down menu will only expand to this height (not including the first button)
+
+        self.selected = which button is selected/chosen from the drop-down
+        self.extended = if the drop down menu is displayed
+        self.shift = how much the buttons should shift because of scroll
         
     '''
     def __init__(self, coords, dim, buttons, scroll_group, window, max_height = 200):
@@ -239,20 +252,37 @@ class ScrollBar():
         self.extended = False
 
         TRIANGLE_BUTTON_WIDTH = 25
-        TRIANGLE_BUTTON_HEIGHT = dim[1]
+        self.TRIANGLE_BUTTON_HEIGHT = dim[1]
         triangle_button_1 = pygame.image.load('Button/triangle_button.png').convert_alpha()
-        triangle_button_1 = pygame.transform.scale(triangle_button_1, (TRIANGLE_BUTTON_WIDTH, TRIANGLE_BUTTON_HEIGHT))
+        triangle_button_1 = pygame.transform.scale(triangle_button_1, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
         triangle_button_2 = pygame.image.load('Button/triangle_button_hovering.png').convert_alpha()
-        triangle_button_2 = pygame.transform.scale(triangle_button_2, (TRIANGLE_BUTTON_WIDTH, TRIANGLE_BUTTON_HEIGHT))
+        triangle_button_2 = pygame.transform.scale(triangle_button_2, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
         self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, Screen.SORTING_SCREEN, window)
         scroll_group.add(self.scroll_button)
-        
+
+        self.scroll_back = Background(Colors.BACKGROUND_SCROLL_COLOR, (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + max_height/2), (TRIANGLE_BUTTON_WIDTH, max_height))
+        self.scroll_bar_height = (max_height * max_height / (dim[1] * (len(buttons)))) 
+        self.scroll_bar = Background(Colors.SCROLLBAR_COLOR, (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2), (TRIANGLE_BUTTON_WIDTH, self.scroll_bar_height))
+
         self.selected = ScrollButton("Choose Sort", None, window.screen, window)
         self.selected.setCoords(coords)
         self.selected.setDim(dim)
         for button in buttons:
             button.setDim(dim)
         scroll_group.add(self.selected)
+
+        # Variables concerning the scroll bar
+        self.drag = False
+        self.shift = 0
+        self.init_mouse_y = 0
+        # Rounding errors can make buttons not appear, so this is to circumvent that
+        self.tolerance = 0.1
+
+        # arrow keys on scroll_bar
+        # -1 = no keys
+        # 0 = up key pressed
+        # 1 = down key pressed
+        self.handled = -1
 
     def button_checks(self):
         # inefficient way of checking if buttons were pressed (TODO : Find faster way?)
@@ -268,20 +298,80 @@ class ScrollBar():
                     self.selected.is_chosen = True
                     self.toggle()
                     return
+            
+            # Drags the scroll bar
+            max_shift = len(self.buttons)*self.dim[1] - self.max_height
+            
+            if not pygame.mouse.get_pressed()[0]:
+                self.drag = False
+            elif self.scroll_bar.get_rect().collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0] and not self.drag:
+                self.drag = True
+            elif (self.drag):
+                dist = (self.scroll_bar.coords[1] - self.scroll_bar_height/2 - (self.coords[1] + self.dim[1]/2))
+                scroll_dist = (self.max_height - self.scroll_bar_height)
+                self.shift = dist * max_shift / scroll_dist
+                
+                self.draw_drop_menu()
+
+            keys = pygame.key.get_pressed()
+            
+            if (keys[pygame.K_UP] and self.handled == -1):
+                if (self.shift - self.dim[1] >= 0):
+                    self.shift -= self.dim[1]
+                    self.draw_drop_menu()
+                    self.handled = 0
+
+            elif (keys[pygame.K_DOWN] and self.handled == -1):
+                if (self.shift + self.dim[1] <= max_shift):
+                    self.shift += self.dim[1]
+                    self.draw_drop_menu()
+                    self.handled = 1
+            elif (self.handled == 0 and not keys[pygame.K_UP]):
+                self.handled = -1
+            elif (self.handled == 1 and not keys[pygame.K_DOWN]):
+                self.handled = -1
+
+            print(self.shift)
+
+    def draw_drop_menu(self):
+        self.scroll_group.empty()
+        self.scroll_group.add(self.scroll_button)
+        keys = pygame.key.get_pressed()
+
+        if (pygame.mouse.get_pressed()[0]):
+            self.scroll_bar.set_coords((self.scroll_bar.coords[0], pygame.mouse.get_pos()[1]))
+        elif (keys[pygame.K_UP] or keys[pygame.K_DOWN]):
+            self.scroll_bar.set_coords((self.scroll_bar.coords[0], self.coords[1] + self.dim[1]/2 + self.shift))
+        if (self.scroll_bar.coords[1] + self.scroll_bar_height/2 > self.coords[1] + self.dim[1]/2 + self.max_height):
+            self.scroll_bar.set_coords((self.scroll_bar.coords[0], self.coords[1] + self.dim[1]/2 + self.max_height - self.scroll_bar_height/2))
+        if (self.scroll_bar.coords[1] - self.scroll_bar_height/2 < self.coords[1] + self.dim[1]/2):
+            self.scroll_bar.set_coords((self.scroll_bar.coords[0], self.coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2))
+
+        self.scroll_group.add(self.scroll_back)
+        self.scroll_group.add(self.scroll_bar)
+        self.scroll_group.add(self.selected)
+
+        for i in range(len(self.buttons)):
+            if (self.coords[1] + (i + 1)*self.dim[1] - self.shift - self.tolerance > self.coords[1] + self.max_height):
+                return
+            if (self.coords[1] + (i + 1)*self.dim[1] - self.shift + self.tolerance < self.coords[1] + self.dim[1]/2):
+                continue
+            self.buttons[i].setCoords((self.coords[0], self.coords[1] + (i + 1)*self.dim[1] - self.shift))
+            self.scroll_group.add(self.buttons[i])
+        
+        self.init_mouse_y = pygame.mouse.get_pos()[1]
+
 
     def toggle(self):
-        self.extended = not self.extended
-        if (self.extended):
-            for i in range(len(self.buttons)):
-                if ((i+1)*self.dim[1] > self.max_height):
-                    return
-                self.buttons[i].setCoords((self.coords[0], self.coords[1] + (i+1)*self.dim[1]))
-                self.scroll_group.add(self.buttons[i])
-        else:
-            if (len(self.scroll_group) > 2):
-                self.scroll_group.empty()
-                self.scroll_group.add(self.scroll_button)
-                self.scroll_group.add(self.selected)
+        if (not self.drag):
+            self.extended = not self.extended
+            if (self.extended):
+                self.draw_drop_menu()
+            else:
+                if (len(self.scroll_group) > 2):
+                    self.scroll_group.empty()
+                    self.scroll_group.add(self.scroll_button)
+                    self.scroll_group.add(self.selected)
                 
     
 
@@ -336,9 +426,8 @@ class ScrollButton(pygame.sprite.Sprite):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
             if pygame.mouse.get_pressed()[0] and (not self.window.options_screen) and not self.handled:
-                if (self.function is not None and self.is_chosen):
-                    self.function()
-                elif (not self.is_chosen):
+                self.function()
+                if (not self.is_chosen):
                     self.is_chosen = True
                 self.handled = True
             else:
@@ -376,6 +465,15 @@ class Background(pygame.sprite.Sprite):
 
     def change_color(self, color):
         self.color = color
+
+    def get_rect(self):
+        return self.rect
+
+    def get_coords(self):
+        return self.coords
+
+    def set_coords(self, coords):
+        self.coords = coords
 
 class Midi():
 
