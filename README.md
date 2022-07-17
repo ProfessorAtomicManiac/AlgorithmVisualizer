@@ -6,7 +6,7 @@ Hopefully when its done it will have the following features:<br>
 &emsp;-Mergesort and Quicksort - FINISHED<br> 
 &emsp;-Heapsort - FINISHED<br> 
 &emsp;-Finish UI (scrolling through sorts, adding file input for custom arrays, advanced options like time delay)<br>
-&emsp;-Counting Sort and other noncomparison O(n) sorts? (Not sure how to visualize that)<br>
+&emsp;-Counting Sort and other noncomparison O(n) sorts? (Not sure how to visualize that) - FINISHED<br>
 -Visualize graph algorithms on a grid or a graph with nodes<br>
 &emsp;-DFS and BFS<br>
 &emsp;-Shortest paths/Minimum spanning Tree (Djistra's, Prim's, Kruskal's)<br>
