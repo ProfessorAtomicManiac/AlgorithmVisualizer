@@ -14,11 +14,15 @@ def main(fps):
 
     window = Wrapper.Window(1200, 600, Wrapper.Screen.NONE, True, False)
     midi = Wrapper.Midi()
+
     screen_group = pygame.sprite.Group()
     options_screen_group = pygame.sprite.Group()
     sorting_group = pygame.sprite.Group()
+    aux_sorting_group = pygame.sprite.Group()
     scroll_group = pygame.sprite.Group()
     scroll_bar = None
+    sorting_actions = None
+
     UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
 
     while True:
@@ -47,12 +51,12 @@ def main(fps):
             UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
             window.screen_change = False
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.screen_change):
-            sorting_actions = UI.SortingActions(window, sorting_group, midi)
-            scroll_bar = sorting_actions.display_sorting(window, screen_group, options_screen_group, scroll_group)
+            sorting_actions = UI.SortingActions(window, screen_group, sorting_group, aux_sorting_group, scroll_group, midi)
+            scroll_bar = sorting_actions.display_sorting(window, screen_group, options_screen_group)
             window.screen_change = False
         # TODO: make screen size change work for sorting screen
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.window_size_change):
-            UI.SortingActions.display_sorting(window, True, screen_group, options_screen_group)
+            #UI.SortingActions.display_sorting(window, True, screen_group, options_screen_group)
             window.window_size_change = False
 
         # This should update everything (Logic to update everything)
@@ -63,10 +67,15 @@ def main(fps):
         if (window.screen == Wrapper.Screen.SORTING_SCREEN):
             sorting_group.draw(window.window)
             sorting_group.update()
+            aux_sorting_group.draw(window.window)
+            aux_sorting_group.update()
             scroll_group.draw(window.window)
             scroll_group.update()
             if (scroll_bar is not None):
                 scroll_bar.button_checks()
+            if (sorting_actions is not None):
+                sorting_actions.update()
+
         if (window.options_screen):
             options_screen_group.draw(window.window)
             options_screen_group.update()

@@ -41,6 +41,8 @@ class ArrayElement(pygame.sprite.Sprite):
             #print("index is changed")
             dim = list(self.dim)
             dim[1] = self.list[self.index] * self.height_unit
+            assert self.list[self.index] >= 0
+
             self.val = self.list[self.index]
             self.dim = tuple(dim)
             
@@ -82,14 +84,24 @@ class Array():
         self.createList()
         
     def createList(self):
-        width = self.dim[0]/self.end
+        width = self.dim[0]/len(self.list)
         y = self.coords[1] + self.dim[1]
-        for i in range(1, self.end+1):
+        for i in range(1, len(self.list)+1):
             height = self.list[i-1] * self.dim[1]/self.end
             height_unit = self.dim[1]/self.end
-            x = self.coords[0] + (i-1)*self.dim[0]/self.end
+            x = self.coords[0] + (i-1)*self.dim[0]/len(self.list)
             self.array_group.add(ArrayElement((x,y), (width, height), self.visited, self.list, height_unit, i-1))
             #print("{},{}  {},{}".format(x, y, width, height))
+
+    def setList(self, size, end):
+        self.list = []
+        self.visited = []
+        self.array_group.empty()
+        self.end = end
+        for i in range(0, size):
+            self.visited.append(False)
+            self.list.append(0)
+        self.createList()
 
     def getList(self):
         return self.list
@@ -97,6 +109,15 @@ class Array():
     # TODO: As part of the challenge, code ur own shuffle method
     def shuffle(self):
         random.shuffle(self.list)
+
+    def generate(self):
+        self.array_group.empty()
+        self.list = []
+        self.visited = []
+        for i in range(self.end):
+            self.list.append(random.randint(1, self.end))
+            self.visited.append(False)
+        self.createList()
 
     def get(self, index):
         self.visited[index] = True
@@ -109,6 +130,22 @@ class Array():
         self.midi.play(int(self.list[index]/self.end*127))
         time.sleep(self.delay)
         self.list[index] = val
+    
+    def insert(self, index, val):
+        self.list.insert(index, val)
+        self.visited.insert(index, True)
+        self.array_group.empty()
+        self.createList()
+        self.midi.play(int(self.list[index]/self.end*127))
+        time.sleep(self.delay)
+
+    def remove(self, index):
+        self.visited[index] = True
+        self.midi.play(int(self.list[index]/self.end*127))
+        time.sleep(self.delay)
+        self.array_group.empty()
+        del self.list[index]
+        self.createList()
 
     def swap(self, ind1, ind2):
         if (ind1 == ind2):
@@ -133,3 +170,18 @@ class Array():
             self.visited.append(False)
         self.array_group.empty()
         self.createList()
+
+    def change(self, dim, coords):
+        self.array_group.empty()
+        self.dim = dim
+        self.coords = coords
+        self.list = []
+        self.visited = []
+        for i in range(1, self.end+1):
+            self.list.append(i)
+            self.visited.append(False)
+        self.createList()
+
+    def kill(self):
+        self.array_group.empty()
+        del self

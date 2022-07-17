@@ -122,11 +122,13 @@ class Button(pygame.sprite.Sprite):
         self.options = options
         self.handled = False
 
+        self.can_press = True # if in options and you don't want buttons behind the options to be pressed
+
     def player_input(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
-            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled:
+            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled and self.can_press:
                 self.function()
                 self.handled = True
             else:
@@ -137,6 +139,9 @@ class Button(pygame.sprite.Sprite):
     def destroy(self):
         if (self.rect.x <= -200):
             self.kill()
+
+    def toggle_press(self):
+        self.can_press = not self.can_press
 
     def update(self):
         if (self.screen != self.window.screen and self.screen != Screen.NONE):
@@ -191,11 +196,13 @@ class TextButton(pygame.sprite.Sprite):
         self.height = 50
         self.handled = False
 
+        self.can_press = True
+
     def player_input(self):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
-            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled:
+            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled and self.can_press:
                 self.function()
                 self.handled = True
             else:
@@ -217,6 +224,15 @@ class TextButton(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center = self.coords)
             self.textRect = self.text.get_rect(center = self.coords)
 
+    def change_func(self, function):
+        self.function = function
+    
+    def set_pressable(self):
+        self.can_press = True
+
+    def set_unpressable(self):
+        self.can_press = False
+
     def update(self):
         #self.window.window.blit(self.text, (self.rect.x + self.width/2, self.rect.y + self.height/2))
         self.window.window.blit(self.text, self.textRect)
@@ -224,7 +240,7 @@ class TextButton(pygame.sprite.Sprite):
         self.slide()
         self.destroy()
 
-# TODO : Fixed scuffed position for scrollbar when scrolling thru the first two elements
+# TODO : Fixed scuffed position for scrollbar when scrolling thru the first two elements using arrow keys
 class ScrollBar():
 
     ''' Implements a drop down menu with a scroll bar
@@ -296,6 +312,7 @@ class ScrollBar():
                     self.selected.setCoords(self.coords)
                     self.selected.setDim(self.dim)
                     self.selected.is_chosen = True
+                    time.sleep(0.5) # TODO : Fix bug to not click buttons behind it
                     self.toggle()
                     return
             
@@ -330,8 +347,6 @@ class ScrollBar():
                 self.handled = -1
             elif (self.handled == 1 and not keys[pygame.K_DOWN]):
                 self.handled = -1
-
-            print(self.shift)
 
     def draw_drop_menu(self):
         self.scroll_group.empty()
@@ -426,7 +441,8 @@ class ScrollButton(pygame.sprite.Sprite):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
             if pygame.mouse.get_pressed()[0] and (not self.window.options_screen) and not self.handled:
-                self.function()
+                if (self.function != None):
+                    self.function()
                 if (not self.is_chosen):
                     self.is_chosen = True
                 self.handled = True
@@ -434,6 +450,9 @@ class ScrollButton(pygame.sprite.Sprite):
                 self.image.fill("#778DA9")
         else:
             self.image.fill("#415A77")
+
+    def change_func(self, func):
+        self.function = func
 
     def update(self):
         #self.window.window.blit(self.text, (self.rect.x + self.width/2, self.rect.y + self.height/2))

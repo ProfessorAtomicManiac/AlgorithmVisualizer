@@ -109,7 +109,11 @@ class SortingActions():
         args[2] = sorting_group
     '''
     '''This class has constructor so we can construct one array that all methods can access'''
-    def __init__(self, window, sorting_group, midi):
+    def __init__(self, window, screen_group, sorting_group, aux_sorting_group, scroll_group, midi):
+        screen_group.empty()
+        sorting_group.empty()
+        aux_sorting_group.empty()
+        scroll_group.empty()
         # Constants
         self.TITLE_Y = 50
         # Margins for all boxes
@@ -125,14 +129,32 @@ class SortingActions():
 
         self.array_length = 64
 
+        self.midi = midi
+        self.window = window
+        self.screen_group = screen_group
+        self.scroll_group = scroll_group
+
         self.SORTING_X = (window.window.get_size()[0] - self.CONFIG_WIDTH - 2*self.MARGIN_X)/2 + self.MARGIN_X
         self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
         self.sorting_group = sorting_group
+        self.aux_sorting_group = aux_sorting_group
         sorting_group.empty()
         #print("{},{}  {},{}".format(self.SORTING_WIDTH, self.SORTING_HEIGHT, self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
         self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), self.array_length, midi)
+        self.aux_array = None
 
-    def display_sorting(self, window, screen_group, options_screen_group, scroll_group):
+        # Debug variable
+        self.mode = "Not Aux"
+    def update(self):
+        if (self.scroll_bar.extended):
+            self.toggle_aux.set_unpressable()
+        else:
+            self.toggle_aux.set_pressable()
+
+    def on_reset(self):
+        self.window.event.set()
+
+    def display_sorting(self, window, screen_group, options_screen_group):
         if (window.screen == Wrapper.Screen.SORTING_SCREEN and (not window.screen_change and not window.window_size_change)):
             return
         # Change Screen
@@ -149,79 +171,85 @@ class SortingActions():
         #screen_group.add(Wrapper.Background("#1B263B", (CONFIG_X, CONFIG_Y), (CONFIG_WIDTH, CONFIG_HEIGHT)))
 
         def selection_sort():
-            selection_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.selection_sort, self.array, window.event), sort_done)
+            selection_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.selection_sort, self.array, self.window.event), sort_done)
             set_sorting_thread(threading.Thread(target=selection_sort))
             return self.sorting_thread.start()
 
         def insertion_sort():
-            insertion_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.insertion_sort, self.array, window.event), sort_done)
+            insertion_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.insertion_sort, self.array, self.window.event), sort_done)
             set_sorting_thread(threading.Thread(target=insertion_sort))
             return self.sorting_thread.start()
 
         def quick_sort():
-            quick_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.quick_sort, self.array, window.event, 0, self.array.length(), True), sort_done)
+            quick_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.quick_sort, self.array, self.window.event, 0, self.array.length(), True), sort_done)
             set_sorting_thread(threading.Thread(target=quick_sort))
             return self.sorting_thread.start()
         
         def merge_sort():
-            merge_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.merge_sort, self.array, window.event, 0, self.array.length(), True), sort_done)
+            merge_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.merge_sort, self.array, self.window.event, 0, self.array.length(), True), sort_done)
             set_sorting_thread(threading.Thread(target=merge_sort))
             return self.sorting_thread.start()
 
         def heap_sort():
-            heap_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.heap_sort, self.array, window.event), sort_done)
+            heap_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.heap_sort, self.array, self.window.event), sort_done)
             set_sorting_thread(threading.Thread(target=heap_sort))
             return self.sorting_thread.start()
 
         def radix_sort():
-            radix_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.radix_sort, self.array, window.event), sort_done)
+            radix_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.radix_sort, self.array, self.window.event, self.aux_array), sort_done)
             set_sorting_thread(threading.Thread(target=radix_sort))
             return self.sorting_thread.start()
         
         def counting_sort():
-            counting_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.counting_sort, self.array, window.event, 0, self.array_length), sort_done)
+            counting_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.counting_sort, self.array, self.window.event, 0, self.array_length, self.aux_array), sort_done)
             set_sorting_thread(threading.Thread(target=counting_sort))
             return self.sorting_thread.start()
 
         def set_sorting_thread(thread):
             if self.sorting_thread is not None:
-                window.event.set()
+                self.window.event.set()
                 self.sorting_thread.join()
-            window.event.clear()
+            self.window.event.clear()
             self.sorting_thread = thread
-
-        def on_reset():
-            window.event.set()
 
         def sort_done():
             self.sorting_thread = None
-            window.event.set()
-
-        screen_group.add(Wrapper.TextButton("Shuffle", ((5*window.window.get_size()[0]/6), 200), Wrapper.sequential_functions(self.array.shuffle, on_reset), Wrapper.Screen.SORTING_SCREEN, window))
-        screen_group.add(Wrapper.TextButton("Reset", ((5*window.window.get_size()[0]/6), 270), Wrapper.sequential_functions(self.array.reset, on_reset), Wrapper.Screen.SORTING_SCREEN, window))
+            self.window.event.set()
 
         self.sorting_thread = None
 
-        selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        insertion_sort_button = Wrapper.ScrollButton("Insertion Sort", insertion_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        quick_sort_button = Wrapper.ScrollButton("Quick Sort", quick_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        heap_sort_button = Wrapper.ScrollButton("Heap Sort", heap_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        radix_sort_button = Wrapper.ScrollButton("Radix Sort", radix_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        counting_sort_button = Wrapper.ScrollButton("Counting Sort", counting_sort, Wrapper.Screen.SORTING_SCREEN, window)
-        buttons = (radix_sort_button, quick_sort_button, merge_sort_button, heap_sort_button, insertion_sort_button, selection_sort_button, counting_sort_button)
+        self.shuffle_button = Wrapper.TextButton("Shuffle", ((5*self.window.window.get_size()[0]/6), 200), Wrapper.sequential_functions(self.array.shuffle, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.reset_button = Wrapper.TextButton("Reset", ((5*self.window.window.get_size()[0]/6), 270), Wrapper.sequential_functions(self.array.reset, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.toggle_aux = Wrapper.TextButton("Auxillary Array", ((5*self.window.window.get_size()[0]/6), 410), Wrapper.sequential_functions(self.toggle_aux_array, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.generate = Wrapper.TextButton("Generate", ((5*self.window.window.get_size()[0]/6), 480), Wrapper.sequential_functions(self.array.generate, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.screen_group.add(self.shuffle_button)
+        self.screen_group.add(self.reset_button)
+        self.screen_group.add(self.toggle_aux)
+        self.screen_group.add(self.generate)
 
+        self.selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.insertion_sort_button = Wrapper.ScrollButton("Insertion Sort", insertion_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.quick_sort_button = Wrapper.ScrollButton("Quick Sort", quick_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.heap_sort_button = Wrapper.ScrollButton("Heap Sort", heap_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.radix_sort_button = Wrapper.ScrollButton("Radix Sort", radix_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.counting_sort_button = Wrapper.ScrollButton("Counting Sort", counting_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        buttons = (self.radix_sort_button, self.quick_sort_button, self.merge_sort_button, self.heap_sort_button, self.insertion_sort_button, self.selection_sort_button, self.counting_sort_button)
+        self.scroll_bar = (Wrapper.ScrollBar(((5*self.window.window.get_size()[0]/6), 340), (200, 50), buttons, self.scroll_group, self.window))
         # Options button
         OptionActions.display_options_button(window, screen_group, options_screen_group)
+        return self.scroll_bar
 
-        scroll_bar = (Wrapper.ScrollBar(((5*window.window.get_size()[0]/6), 340), (200, 50), buttons, scroll_group, window))
-        return scroll_bar
-
-    def pressed_sort():
-        pass
-
-    def pressed_shuffle():
-        pass
+    def toggle_aux_array(self):
+        if self.aux_array == None:
+            self.mode = "Aux"
+            self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
+            self.aux_array = Array(self.aux_sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y), self.array_length, self.midi)
+        else:
+            self.mode = "Not Aux"
+            self.aux_array.kill()
+            self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
+            self.aux_array = None
 
     def pressed_generate():
         pass

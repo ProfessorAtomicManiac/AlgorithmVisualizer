@@ -219,7 +219,7 @@ def heap_sort(arr, event):
     If you want something cool, make the array size big
     you can do that on line 126 in UI.py. I will eventually add it to the UI don't worry
 '''
-def radix_sort(arr, event):
+def radix_sort(arr, event, aux):
     maxValue = 0
     for i in range(arr.length()):
         if (arr.get(i) > maxValue):
@@ -235,33 +235,53 @@ def radix_sort(arr, event):
             return
 
     for i in range(maxDigit):
-        bucketSort(arr, event, i)
+        bucketSort(arr, event, i, aux)
         if (event.is_set()):
             return
     finish(arr)
 
 # Does consider negative numbers
-def bucketSort(arr, event, digit):
+def bucketSort(arr, event, digit, aux):
     # Range is [-9, 9]
     length = 19
     buckets = []
-    for i in range(length):
-        buckets.append([])
-        
-    
-    for i in range(arr.length()):
-        buckets[int(getDigit(arr.get(i), digit) + 9)].append(arr.get(i))
-        if (event.is_set()):
-            return
+    if (aux != None):
+        aux.list = []
+        for i in range(length):
+            buckets.append([])
+        aux.setList(19, arr.length())
 
-    index = 0
-    for bucket in buckets:
-        for num in bucket:
-            arr.replace(index, num)
-            index += 1
+        
+        for i in range(arr.length()):
+            buckets[int(getDigit(arr.get(i), digit) + 9)].append(arr.get(i))
+            aux.replace(int(getDigit(arr.get(i), digit) + 9), aux.get(int(getDigit(arr.get(i), digit) + 9)) + 1)
             if (event.is_set()):
                 return
 
+        index = 0
+        for bucket in buckets:
+            for num in bucket:
+                arr.replace(index, num)
+                index += 1
+                if (event.is_set()):
+                    return
+    else:
+        for i in range(length):
+            buckets.append([])
+            
+        
+        for i in range(arr.length()):
+            buckets[int(getDigit(arr.get(i), digit) + 9)].append(arr.get(i))
+            if (event.is_set()):
+                return
+
+        index = 0
+        for bucket in buckets:
+            for num in bucket:
+                arr.replace(index, num)
+                index += 1
+                if (event.is_set()):
+                    return
     return arr
 
 def getDigit(num, digit):
@@ -278,36 +298,58 @@ def getDigit(num, digit):
     min = smallest element in arr
     max = biggest element in arr
 '''
-def counting_sort(arr, event, min, max):
-    count = []
-    ans = []
-    for i in range(min, max + 1):
-        count.append(0)
-        if (event.is_set()):
-            return
-    
-    for i in range(arr.length()):
-        count[arr.get(i) - min] += 1
-        ans.append(0)
-        if (event.is_set()):
-            return
+def counting_sort(arr, event, min, max, aux):
+    if (aux == None):
+        count = []
+        ans = []
 
-    for i in range(arr.length()):
-        count[i] += count[i-1]
-        if (event.is_set()):
-            return
-    count.insert(0, 0)
-    count.pop(len(count) - 1)
+        for i in range(max - min + 1):
+            count.append(0)
+        
+        for i in range(arr.length()):
+            count[arr.get(i) - min] += 1
+            ans.append(0)
+            if (event.is_set()):
+                return
 
-    for i in range(arr.length()-1, -1, -1):
-        ans[count[arr.get(i)] - 1] = arr.get(i)
-        count[arr.get(i)] -= 1
-        if (event.is_set()):
-            return
+        for i in range(1, len(count)):
+            count[i] += count[i-1]
+            if (event.is_set()):
+                return
 
-    for i in range(arr.length()):
-        arr.replace(i, ans[i])
-        if (event.is_set()):
-            return
+        for i in range(arr.length()-1, -1, -1):
+            ans[count[arr.get(i)] - 1] = arr.get(i)
+            count[arr.get(i)] -= 1
+            if (event.is_set()):
+                return
 
+        for i in range(arr.length()):
+            arr.replace(i, ans[i])
+            if (event.is_set()):
+                return
+    else:
+        aux.setList(max - min + 1, arr.length())
+        ans = []
+        
+        for i in range(arr.length()):
+            aux.replace(arr.get(i) - min, aux.get(arr.get(i) - min) + 1)
+            ans.append(0)
+            if (event.is_set()):
+                return
+
+        for i in range(1, aux.length()):
+            aux.replace(i, aux.get(i) + aux.get(i-1))
+            if (event.is_set()):
+                return
+
+        for i in range(arr.length()-1, -1, -1):
+            ans[aux.get(arr.get(i)) - 1] = arr.get(i)
+            aux.replace(arr.get(i), aux.get(arr.get(i)) - 1)
+            if (event.is_set()):
+                return
+
+        for i in range(arr.length()):
+            arr.replace(i, ans[i])
+            if (event.is_set()):
+                return
     finish(arr)
