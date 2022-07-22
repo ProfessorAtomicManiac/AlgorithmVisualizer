@@ -69,7 +69,7 @@ class Array():
        coords = where the array will be placed in (x, y) form
        end = the maximum possible value of the array (will sort from 1-end)
     '''
-    def __init__(self, array_group, dim, coords, end, midi, delay = 0.01):
+    def __init__(self, array_group, dim, coords, end, midi, delay = 0.001):
         self.array_group = array_group
         self.list = []
         self.visited = []

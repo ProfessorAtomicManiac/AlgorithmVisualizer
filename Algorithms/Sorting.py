@@ -240,21 +240,20 @@ def radix_sort(arr, event, aux):
             return
     finish(arr)
 
-# Does consider negative numbers
 def bucketSort(arr, event, digit, aux):
-    # Range is [-9, 9]
-    length = 19
+    # Range is [0, 9]
+    length = 10
     buckets = []
     if (aux != None):
         aux.list = []
         for i in range(length):
             buckets.append([])
-        aux.setList(19, arr.length())
+        aux.setList(length, arr.length())
 
         
         for i in range(arr.length()):
-            buckets[int(getDigit(arr.get(i), digit) + 9)].append(arr.get(i))
-            aux.replace(int(getDigit(arr.get(i), digit) + 9), aux.get(int(getDigit(arr.get(i), digit) + 9)) + 1)
+            buckets[int(getDigit(arr.get(i), digit))].append(arr.get(i))
+            aux.replace(int(getDigit(arr.get(i), digit)), aux.get(int(getDigit(arr.get(i), digit))) + 1)
             if (event.is_set()):
                 return
 
@@ -271,7 +270,7 @@ def bucketSort(arr, event, digit, aux):
             
         
         for i in range(arr.length()):
-            buckets[int(getDigit(arr.get(i), digit) + 9)].append(arr.get(i))
+            buckets[int(getDigit(arr.get(i), digit))].append(arr.get(i))
             if (event.is_set()):
                 return
 

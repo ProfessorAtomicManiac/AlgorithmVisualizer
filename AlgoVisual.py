@@ -42,7 +42,6 @@ def main(fps):
 
         # apparentally python has no switch cases?
         # TODO: either update to python 3.10 or create a dictionary
-        # TODO: MAYBE DO SHOOT RElease
         # This should only have logic for what to do when its on screen x or something like that
         if (window.screen == Wrapper.Screen.MAIN_MENU and window.window_size_change):
             UI.MainMenuActions.display_main_menu(window, False, screen_group, options_screen_group)
@@ -52,7 +51,7 @@ def main(fps):
             window.screen_change = False
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.screen_change):
             sorting_actions = UI.SortingActions(window, screen_group, sorting_group, aux_sorting_group, scroll_group, midi)
-            scroll_bar = sorting_actions.display_sorting(window, screen_group, options_screen_group)
+            scroll_bar = sorting_actions.display_sorting(screen_group, options_screen_group)
             window.screen_change = False
         # TODO: make screen size change work for sorting screen
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.window_size_change):

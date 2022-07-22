@@ -23,6 +23,7 @@ class MainMenuActions():
         TITLE_Y = 100
         SORTING_Y = 200
         GRAPH_Y = 270
+
         # TODO: Potentially refactor to get rid of window.screen_change and window_size_change
         if (window.screen == Wrapper.Screen.MAIN_MENU and (not window.screen_change and not window.window_size_change)):
             return
@@ -30,13 +31,12 @@ class MainMenuActions():
         window.screen = Wrapper.Screen.MAIN_MENU
 
         # Display everything
-        ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 50)
         screen_group.empty()
         pressed_sorting = Wrapper.add_args_to_func(MainMenuActions.pressed_sorting, window)
         pressed_graph = Wrapper.add_args_to_func(MainMenuActions.pressed_graph, window)
-        screen_group.add(Wrapper.Text(window, "Algorithm Visualizer", (window.window.get_size()[0]/2, TITLE_Y), ubuntu_font, "#E0E1DD", Wrapper.Screen.MAIN_MENU, slide_in))
-        screen_group.add(Wrapper.TextButton("Sorting", ((window.window.get_size()[0]/2), SORTING_Y), pressed_sorting, Wrapper.Screen.MAIN_MENU, window, slide_in))
-        screen_group.add(Wrapper.TextButton("Graphs", ((window.window.get_size()[0]/2), GRAPH_Y), pressed_graph, Wrapper.Screen.MAIN_MENU, window, slide_in))
+        screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Algorithm Visualizer", Wrapper.FontSizes.TITLE_SIZE), (window.window.get_size()[0]/2, TITLE_Y), window, slide_in))
+        screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0]/2), SORTING_Y), pressed_sorting, window, slide_in))
+        screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Graphs", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0]/2), GRAPH_Y), pressed_graph, window, slide_in))
         
         # Options
         OptionActions.display_options_button(window, screen_group, options_screen_group)
@@ -44,10 +44,8 @@ class MainMenuActions():
     # Input code, specifically here for button presses
     def pressed_sorting(window):
         window.switch_screen(Wrapper.Screen.SORTING_SCREEN)
-        window.screen_change = True
     def pressed_graph(window):
         window.switch_screen(Wrapper.Screen.GRAPH_MENU)
-        window.screen_change = True
 
 class OptionActions():
 
@@ -58,7 +56,7 @@ class OptionActions():
         options_button_2 = pygame.transform.rotozoom(options_button_2, 0, 0.1)
         display_options = Wrapper.add_args_to_func(OptionActions.display_options, window, options_screen_group)
         # TODO: Crop image properly using Figma
-        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, Wrapper.Screen.NONE, window, False))
+        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, window, False, Wrapper.Screen.NONE))
     
     '''@args = options_group should be passed in first, then screen_group'''
     def display_options(window, options_group):
@@ -70,15 +68,16 @@ class OptionActions():
         window.options_screen = True
 
         # Draw everything
-        options_group.add(Wrapper.Background("#1B263B", (window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT)))
-        ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 50)
+        options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
+        
         # Where the text starts rendering
         text_start = window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
-        options_group.add(Wrapper.Text(window, "Options", (window.window.get_size()[0]/2, text_start), ubuntu_font, "#E0E1DD", Wrapper.Screen.NONE, False))
+
+        options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Options", Wrapper.FontSizes.TITLE_SIZE), (window.window.get_size()[0]/2, text_start), window, False, Wrapper.Screen.NONE))
         close_options = Wrapper.add_args_to_func(OptionActions.close_options, window, options_group)
         press_main_menu = Wrapper.add_args_to_func(OptionActions.press_main_menu, window, options_group)
-        options_group.add(Wrapper.TextButton("Return", (window.window.get_size()[0]/2, text_start + 100), close_options, Wrapper.Screen.NONE, window, False, True))
-        options_group.add(Wrapper.TextButton("Main Menu", (window.window.get_size()[0]/2, text_start + 175), press_main_menu, Wrapper.Screen.NONE, window, False, True))
+        options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Return", Wrapper.FontSizes.BUTTON_SIZE), (window.window.get_size()[0]/2, text_start + 100), close_options, window, False, Wrapper.Screen.NONE))
+        options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Main Menu", Wrapper.FontSizes.BUTTON_SIZE), (window.window.get_size()[0]/2, text_start + 175), press_main_menu, window, False, Wrapper.Screen.NONE))
     
     # Input (specifically buttons)
 
@@ -127,7 +126,7 @@ class SortingActions():
         #CONFIG_Y = SORTING_HEIGHT + 2*SORTING_MARGIN_Y
         self.CONFIG_HEIGHT = self.SORTING_HEIGHT
 
-        self.array_length = 64
+        self.array_length = 256
 
         self.midi = midi
         self.window = window
@@ -143,32 +142,27 @@ class SortingActions():
         self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), self.array_length, midi)
         self.aux_array = None
 
-        # Debug variable
-        self.mode = "Not Aux"
     def update(self):
         if (self.scroll_bar.extended):
             self.toggle_aux.set_unpressable()
+            self.generate.set_unpressable()
         else:
             self.toggle_aux.set_pressable()
+            self.generate.set_pressable()
 
     def on_reset(self):
         self.window.event.set()
 
-    def display_sorting(self, window, screen_group, options_screen_group):
-        if (window.screen == Wrapper.Screen.SORTING_SCREEN and (not window.screen_change and not window.window_size_change)):
+    def display_sorting(self, screen_group, options_screen_group):
+        if (self.window.screen == Wrapper.Screen.SORTING_SCREEN and (not self.window.screen_change and not self.window.window_size_change)):
             return
         # Change Screen
-        window.screen = Wrapper.Screen.SORTING_SCREEN
+        self.window.switch_screen(Wrapper.Screen.SORTING_SCREEN)
 
         # Drawing Everything
-        ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 50)
         screen_group.empty()
-        # TODO: Make it slide by parameter?
-        screen_group.add(Wrapper.Text(window, "Sorting", (window.window.get_size()[0]/2, self.TITLE_Y), ubuntu_font, "#E0E1DD", Wrapper.Screen.SORTING_SCREEN, True))
-        #print(CONFIG_WIDTH)
-        #print(CONFIG_HEIGHT)
-        screen_group.add(Wrapper.Background("#1B263B", (self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT)))
-        #screen_group.add(Wrapper.Background("#1B263B", (CONFIG_X, CONFIG_Y), (CONFIG_WIDTH, CONFIG_HEIGHT)))
+        screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window))
+        screen_group.add(Wrapper.Background((self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
 
         def selection_sort():
             selection_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.selection_sort, self.array, self.window.event), sort_done)
@@ -218,58 +212,42 @@ class SortingActions():
 
         self.sorting_thread = None
 
-        self.shuffle_button = Wrapper.TextButton("Shuffle", ((5*self.window.window.get_size()[0]/6), 200), Wrapper.sequential_functions(self.array.shuffle, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.reset_button = Wrapper.TextButton("Reset", ((5*self.window.window.get_size()[0]/6), 270), Wrapper.sequential_functions(self.array.reset, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.toggle_aux = Wrapper.TextButton("Auxillary Array", ((5*self.window.window.get_size()[0]/6), 410), Wrapper.sequential_functions(self.toggle_aux_array, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.generate = Wrapper.TextButton("Generate", ((5*self.window.window.get_size()[0]/6), 480), Wrapper.sequential_functions(self.array.generate, self.on_reset), Wrapper.Screen.SORTING_SCREEN, self.window)
+        # Button Constants
+        button_col_top = 150 # Where the buttons start
+        button_margin = 70
+
+        self.shuffle_button = Wrapper.TextButton(Wrapper.DefaultText.text("Shuffle", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top), Wrapper.sequential_functions(self.array.shuffle, self.on_reset), self.window)
+        self.reset_button = Wrapper.TextButton(Wrapper.DefaultText.text("Reset", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), Wrapper.sequential_functions(self.array.reset, self.on_reset), self.window)
+        self.toggle_aux = Wrapper.TextButton(Wrapper.DefaultText.text("Auxillary Array", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 3 * button_margin), Wrapper.sequential_functions(self.toggle_aux_array, self.on_reset), self.window)
+        self.generate = Wrapper.TextButton(Wrapper.DefaultText.text("Generate", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 4 * button_margin), Wrapper.sequential_functions(self.array.generate, self.on_reset), self.window)
         self.screen_group.add(self.shuffle_button)
         self.screen_group.add(self.reset_button)
         self.screen_group.add(self.toggle_aux)
         self.screen_group.add(self.generate)
 
-        self.selection_sort_button = Wrapper.ScrollButton("Selection Sort", selection_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.insertion_sort_button = Wrapper.ScrollButton("Insertion Sort", insertion_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.quick_sort_button = Wrapper.ScrollButton("Quick Sort", quick_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.merge_sort_button = Wrapper.ScrollButton("Merge Sort", merge_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.heap_sort_button = Wrapper.ScrollButton("Heap Sort", heap_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.radix_sort_button = Wrapper.ScrollButton("Radix Sort", radix_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
-        self.counting_sort_button = Wrapper.ScrollButton("Counting Sort", counting_sort, Wrapper.Screen.SORTING_SCREEN, self.window)
+        self.selection_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Selection Sort", Wrapper.FontSizes.BUTTON_SIZE), selection_sort, self.window)
+        self.insertion_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Insertion Sort", Wrapper.FontSizes.BUTTON_SIZE), insertion_sort, self.window)
+        self.quick_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Quick Sort", Wrapper.FontSizes.BUTTON_SIZE), quick_sort, self.window)
+        self.merge_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Merge Sort", Wrapper.FontSizes.BUTTON_SIZE), merge_sort, self.window)
+        self.heap_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Heap Sort", Wrapper.FontSizes.BUTTON_SIZE), heap_sort, self.window)
+        self.radix_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Radix Sort", Wrapper.FontSizes.BUTTON_SIZE), radix_sort, self.window)
+        self.counting_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Counting Sort", Wrapper.FontSizes.BUTTON_SIZE), counting_sort, self.window)
         buttons = (self.radix_sort_button, self.quick_sort_button, self.merge_sort_button, self.heap_sort_button, self.insertion_sort_button, self.selection_sort_button, self.counting_sort_button)
-        self.scroll_bar = (Wrapper.ScrollBar(((5*self.window.window.get_size()[0]/6), 340), (200, 50), buttons, self.scroll_group, self.window))
+        self.scroll_bar = (Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), 290), (200, 50), self.scroll_group, self.window))
         # Options button
-        OptionActions.display_options_button(window, screen_group, options_screen_group)
+        OptionActions.display_options_button(self.window, screen_group, options_screen_group)
         return self.scroll_bar
 
     def toggle_aux_array(self):
         if self.aux_array == None:
-            self.mode = "Aux"
             self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
             self.aux_array = Array(self.aux_sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y), self.array_length, self.midi)
         else:
-            self.mode = "Not Aux"
             self.aux_array.kill()
             self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
             self.aux_array = None
 
-    def pressed_generate():
-        pass
-
-    def input_generate():
-        pass
-
     def input_size():
-        pass
-
-    def pressed_pause():
-        pass
-
-    def pressed_forward():
-        pass
-
-    def pressed_backward():
-        pass
-
-    def checked_step_delay():
         pass
 
     def input_time_delay():

@@ -29,11 +29,16 @@ class Screen(enum.Enum):
 
 class Colors():
     BACKGROUND_COLOR = "#0D1B2A"
+    SMALL_BACKGROUND_COLOR = "#1B263B"
     BUTTON_COLOR = "#415A77"
     HOVER_BUTTON_COLOR = "#778DA9"
     TEXT_COLOR = "#E0E1DD"
     BACKGROUND_SCROLL_COLOR = BUTTON_COLOR
     SCROLLBAR_COLOR = TEXT_COLOR
+
+class FontSizes():
+    BUTTON_SIZE = 25
+    TITLE_SIZE = 50
 
 class Window():
     '''Creation of the actual window
@@ -51,6 +56,7 @@ class Window():
         self.screen = screen
         self.background = pygame.Surface((width, height))
         self.background.fill(Colors.BACKGROUND_COLOR)
+
         self.screen_change = screen_change
         self.options_screen = False
         self.window_size_change = window_size_change
@@ -62,65 +68,105 @@ class Window():
 
     def switch_screen(self, screen):
         self.screen = screen
+        self.screen_change = True
+
+''' Seperate class to make it so that you don't have 9 parameters when making text
+        @text = the text to be displayed
+        @font = the font
+        @alias = whether to have anti-aliasing or not (in general, set to True)
+        @color = the color of the text      
+'''    
+class TextArgs():
+    def __init__(self, text, font, alias, color):
+        self.text = text
+        self.font = font
+        self.alias = alias
+        self.color = color
+
+    def render(self):
+        return self.font.render(self.text, self.alias, self.color)
+
+class DefaultText():
+    def text(text, font_size):
+        ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", font_size)
+        return TextArgs(text, ubuntu_font, True, Colors.TEXT_COLOR)
+
     
+
 class Text(pygame.sprite.Sprite):
     ''' Creates text
         @window = the window class
-        @text = the text to be displayed
         @coords = where the text will be centered at
-        @font = the font
-        @color = the color of the text
-        @screen = the text will stay put if its the right screen, otherwise it will do a scrolling animation
+        @text_arg = TextArgs class object
         @will_slide = whether the thing will slide into the screen when initialized
     '''
-    def __init__(self, window, text, coords, font, color, screen, will_slide):
+    def __init__(self, text_arg, coords, window, will_slide = True, screen = None):
         super().__init__()
         self.window = window
-        self.image = font.render(text, True, color)
+        self.image = text_arg.render()
+        self.will_slide = will_slide
 
         if (will_slide):
             self.rect = self.image.get_rect(center = (window.window.get_size()[0] + 800, coords[1]))
         else: 
             self.rect = self.image.get_rect(center = coords)
-        self.screen = screen
+        # Will automatically set screen to whatever screen it is currently on
+        if screen == None:
+            self.screen = window.screen
+        else:
+            self.screen = screen
         self.accel = 0
         self.coords = coords
 
-    def destroy(self):
-        if (self.rect.x <= -600):
-            self.kill()
-
-    def update(self):
+    def slide(self):
         if ((self.screen != self.window.screen and self.screen != Screen.NONE) or self.rect.x > self.coords[0]):
             self.accel += -1
             self.rect.x += self.accel
         else:
             self.accel = 0
             self.rect = self.image.get_rect(center = self.coords)
+
+    def destroy(self):
+        if (self.rect.x <= -600):
+            self.kill()
+
+    def update(self):
+        if self.will_slide:
+            self.slide()
+        
         self.destroy()
 
 # TODO: There is a double where a click registers as a double click
 class Button(pygame.sprite.Sprite):
     '''This is an icon button class
+       @images = image background of the button
        @coords = the icon will be centered at those coords
        @function = the function that will be called when the button is pressed
-       @screen = what screen the button will stay on (will do a sliding animation when its the wrong screen)
        @window = the Window class object
-       @screen_group = a typical argument used for the @function
-       @options = whether the button is part of the options menu or not (There was a bug where when you have the options screen
-       you can still use buttons on the main screen)
-       @args = arguments to pass to the function
     '''
-    def __init__(self, images, coords, function, screen, window, options=False):
+    def __init__(self, images, coords, function, window, will_slide = True, screen = None):
         super().__init__()
         self.images = images
         self.image = images[0]
         self.rect = self.image.get_rect(center = (coords[0], coords[1]))
         self.function = function
-        self.screen = screen
+        self.coords = coords
+        self.will_slide = will_slide
+
+        if will_slide:
+            self.rect = self.image.get_rect(center = (window.window.get_size()[0] + 200, coords[1]))
+        else:
+            self.rect = self.image.get_rect(center = coords)
+
+        # Will automatically set screen to whatever screen it is currently on
+        if screen == None:
+            self.screen = window.screen
+        else:
+            self.screen = screen
+        self.screen = window.screen
         self.window = window
-        self.options = options
         self.handled = False
+        self.accel = 0
 
         self.can_press = True # if in options and you don't want buttons behind the options to be pressed
 
@@ -128,7 +174,7 @@ class Button(pygame.sprite.Sprite):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
-            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled and self.can_press:
+            if pygame.mouse.get_pressed()[0] and not self.handled and self.can_press:
                 self.function()
                 self.handled = True
             else:
@@ -136,17 +182,36 @@ class Button(pygame.sprite.Sprite):
         else:
             self.image = self.images[0]
 
+    # If its in options, advanced tools, etc where a window would pop up, the button shouldn't be pressed
+    def check_overlap(self):
+        if (self.window.screen == Screen.NONE and self.screen != Screen.NONE):
+            self.set_unpressable()
+        else:
+            self.set_pressable()
+
+    def slide(self):
+        if ((self.screen != self.window.screen and self.screen != Screen.NONE) or self.rect.x > self.coords[0]):
+            self.accel += -1
+            self.rect.x += self.accel
+        else:
+            self.accel = 0
+            self.rect = self.image.get_rect(center = self.coords)
+
     def destroy(self):
         if (self.rect.x <= -200):
             self.kill()
 
-    def toggle_press(self):
-        self.can_press = not self.can_press
+    def set_pressable(self):
+        self.can_press = True
+
+    def set_unpressable(self):
+        self.can_press = False
 
     def update(self):
-        if (self.screen != self.window.screen and self.screen != Screen.NONE):
-            self.rect.x -= 15
         self.player_input()
+        self.check_overlap()
+        if self.will_slide:
+            self.slide()
         self.destroy()
 
 class TextButton(pygame.sprite.Sprite):
@@ -163,25 +228,21 @@ class TextButton(pygame.sprite.Sprite):
     The window should be the background class
     '''
     '''This is a text button class
-       @text = the text that will be displayed at the center of the button
+       @text_arg = the text that will be displayed at the center of the button (TextArg class object)
        @coords = the icon will be centered at those coords
        @function = the function that will be called when the button is pressed
        @screen = what screen the button will stay on (will do a sliding animation when its the wrong screen)
        @window = the Window class object
        @will_slide = whether the button will slide onto the screen or just appear
-       @options = whether the button is part of the options menu or not (There was a bug where when you have the options screen
-       you can still use buttons on the main screen)
-       @args = arguments to pass to the function
     '''
-    
 
-    def __init__(self, text, coords, function, screen, window, will_slide = True, options = False):
+    def __init__(self, text_arg, coords, function, window, will_slide = True, screen = None):
         super().__init__()
-        ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 26)
-        self.text = ubuntu_font.render(text, True, "#E0E1DD")
+        self.text = text_arg.render()
         self.image = pygame.image.load("Button/button.png").convert_alpha()
         self.coords = coords
-        self.options = options
+        self.will_slide = will_slide
+
         if will_slide:
             self.rect = self.image.get_rect(center = (window.window.get_size()[0] + 200, coords[1]))
             self.textRect = self.text.get_rect(center = (window.window.get_size()[0] + 200, coords[1]))
@@ -189,9 +250,15 @@ class TextButton(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center = coords)
             self.textRect = self.text.get_rect(center = coords)
         self.function = function
-        self.screen = screen
+        # Will automatically set screen to whatever screen it is currently on
+        if screen == None:
+            self.screen = window.screen
+        else:
+            self.screen = screen
         self.window = window
+
         self.accel = 0
+        # default dimensions, cannot change now
         self.width = 200
         self.height = 50
         self.handled = False
@@ -202,7 +269,7 @@ class TextButton(pygame.sprite.Sprite):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
-            if pygame.mouse.get_pressed()[0] and (self.options or not self.window.options_screen) and not self.handled and self.can_press:
+            if pygame.mouse.get_pressed()[0] and not self.handled and self.can_press:
                 self.function()
                 self.handled = True
             else:
@@ -224,6 +291,13 @@ class TextButton(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center = self.coords)
             self.textRect = self.text.get_rect(center = self.coords)
 
+    # If its in options, advanced tools, etc where a window would pop up, the button shouldn't be pressed
+    def check_overlap(self):
+        if (self.window.screen == Screen.NONE and self.screen != Screen.NONE):
+            self.set_unpressable()
+        else:
+            self.set_pressable()
+
     def change_func(self, function):
         self.function = function
     
@@ -237,7 +311,9 @@ class TextButton(pygame.sprite.Sprite):
         #self.window.window.blit(self.text, (self.rect.x + self.width/2, self.rect.y + self.height/2))
         self.window.window.blit(self.text, self.textRect)
         self.player_input()
-        self.slide()
+        self.check_overlap()
+        if self.will_slide:
+            self.slide()
         self.destroy()
 
 # TODO : Fixed scuffed position for scrollbar when scrolling thru the first two elements using arrow keys
@@ -257,7 +333,7 @@ class ScrollBar():
         self.shift = how much the buttons should shift because of scroll
         
     '''
-    def __init__(self, coords, dim, buttons, scroll_group, window, max_height = 200):
+    def __init__(self, buttons, coords, dim, scroll_group, window, max_height = 200):
         self.coords = coords
         self.dim = dim
         self.scroll_group = scroll_group
@@ -273,14 +349,14 @@ class ScrollBar():
         triangle_button_1 = pygame.transform.scale(triangle_button_1, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
         triangle_button_2 = pygame.image.load('Button/triangle_button_hovering.png').convert_alpha()
         triangle_button_2 = pygame.transform.scale(triangle_button_2, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
-        self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, Screen.SORTING_SCREEN, window)
+        self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, window)
         scroll_group.add(self.scroll_button)
 
-        self.scroll_back = Background(Colors.BACKGROUND_SCROLL_COLOR, (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + max_height/2), (TRIANGLE_BUTTON_WIDTH, max_height))
+        self.scroll_back = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + max_height/2), (TRIANGLE_BUTTON_WIDTH, max_height), Colors.BACKGROUND_SCROLL_COLOR)
         self.scroll_bar_height = (max_height * max_height / (dim[1] * (len(buttons)))) 
-        self.scroll_bar = Background(Colors.SCROLLBAR_COLOR, (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2), (TRIANGLE_BUTTON_WIDTH, self.scroll_bar_height))
+        self.scroll_bar = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2), (TRIANGLE_BUTTON_WIDTH, self.scroll_bar_height), Colors.SCROLLBAR_COLOR)
 
-        self.selected = ScrollButton("Choose Sort", None, window.screen, window)
+        self.selected = ScrollButton(DefaultText.text("Choose Sort", FontSizes.BUTTON_SIZE), None, window)
         self.selected.setCoords(coords)
         self.selected.setDim(dim)
         for button in buttons:
@@ -388,8 +464,6 @@ class ScrollBar():
                     self.scroll_group.add(self.scroll_button)
                     self.scroll_group.add(self.selected)
                 
-    
-
 class ScrollButton(pygame.sprite.Sprite):
     '''This is a scroll button class
        Generally default: #415A77
@@ -401,33 +475,27 @@ class ScrollButton(pygame.sprite.Sprite):
        @text = the text that will be displayed at the center of the button
        @coords = the icon will be centered at those coords
        @function = the function that will be called when the button is pressed
-       @screen = what screen the button will stay on (will do a sliding animation when its the wrong screen)
        @window = the Window class object
-       @will_slide = whether the button will slide onto the screen or just appear
-       @options = whether the button is part of the options menu or not (There was a bug where when you have the options screen
-       you can still use buttons on the main screen)
-       @args = arguments to pass to the function
 
        @is_chosen - if the button is selected
     '''
-    def __init__(self, text, function, screen, window):
+    def __init__(self, text_arg, function, window):
         super().__init__()
-        ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", 26)
-        self.text = ubuntu_font.render(text, True, "#E0E1DD")
-        self.copy_text = text # Used for duplicating purposes
+        self.text = text_arg.render()
+        self.copy_text = text_arg # Used for duplicating purposes
         self.dim = ()
         self.coords = ()
         self.image = pygame.Surface((0, 0))
         self.rect = self.image.get_rect()
         self.function = function
-        self.screen = screen
+        self.screen = window.screen
         self.window = window
         self.handled = False
 
         self.is_chosen = False
 
     def copy(self):
-        copy = ScrollButton(self.copy_text, self.function, self.screen, self.window)
+        copy = ScrollButton(self.copy_text, self.function, self.window)
         return copy
 
     def setDim(self, dim):
@@ -451,6 +519,19 @@ class ScrollButton(pygame.sprite.Sprite):
         else:
             self.image.fill("#415A77")
 
+    # If its in options, advanced tools, etc where a window would pop up, the button shouldn't be pressed
+    def check_overlap(self):
+        if (self.window.screen == Screen.NONE and self.screen != Screen.NONE):
+            self.set_unpressable()
+        else:
+            self.set_pressable()
+
+    def set_pressable(self):
+        self.can_press = True
+
+    def set_unpressable(self):
+        self.can_press = False
+
     def change_func(self, func):
         self.function = func
 
@@ -460,6 +541,7 @@ class ScrollButton(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.coords)
         self.textRect = self.text.get_rect(center = self.coords)
         self.window.window.blit(self.text, self.textRect)
+        self.check_overlap()
         self.player_input()
 
     
@@ -471,7 +553,7 @@ class Background(pygame.sprite.Sprite):
        @coords = the coordinates where the rectangle will be centered at
        @dim = the dimensions of the rectangle
     '''
-    def __init__(self, color, coords, dim):
+    def __init__(self, coords, dim, color):
         super().__init__()
         self.image = pygame.Surface(dim)
         self.color = color
