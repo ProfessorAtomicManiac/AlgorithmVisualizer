@@ -69,11 +69,13 @@ class Array():
        coords = where the array will be placed in (x, y) form
        end = the maximum possible value of the array (will sort from 1-end)
     '''
-    def __init__(self, array_group, dim, coords, end, midi, delay = 0.001):
+    default_delay = 0.001
+    default_size = 256
+    def __init__(self, array_group, dim, coords, end, midi, delay = default_delay, size = default_size):
         self.array_group = array_group
         self.list = []
         self.visited = []
-        for i in range(1, end+1):
+        for i in range(1, size+1):
             self.list.append(i)
             self.visited.append(False)
         self.dim = dim
@@ -81,8 +83,28 @@ class Array():
         self.end = end
         self.delay = delay
         self.midi = midi
+        self.size = size
         self.createList()
         
+    def change_delay(self, delay):
+        try:
+            self.delay = float(delay)
+        # TODO: figure out how to get rid of magic numbers using static constants idk python weird
+        except ValueError:
+            self.delay = 0.001
+        return self.delay
+
+    def change_size(self, size):
+        try:
+            self.size = int(size)
+            self.end = int(size)
+        # TODO: figure out how to get rid of magic numbers using static constants idk python weird
+        except ValueError:
+            self.size = 256
+            self.end = 256
+        self.reset()
+        return self.delay
+
     def createList(self):
         width = self.dim[0]/len(self.list)
         y = self.coords[1] + self.dim[1]
@@ -93,6 +115,7 @@ class Array():
             self.array_group.add(ArrayElement((x,y), (width, height), self.visited, self.list, height_unit, i-1))
             #print("{},{}  {},{}".format(x, y, width, height))
 
+    # TODO: Get rid of size parameter
     def setList(self, size, end):
         self.list = []
         self.visited = []
@@ -165,8 +188,17 @@ class Array():
     def reset(self):
         self.list = []
         self.visited = []
-        for i in range(1, self.end+1):
+        for i in range(1, self.size+1):
             self.list.append(i)
+            self.visited.append(False)
+        self.array_group.empty()
+        self.createList()
+
+    def reverse(self):
+        self.list = []
+        self.visited = []
+        for i in range(1, self.end+1):
+            self.list.append(self.end - i + 1)
             self.visited.append(False)
         self.array_group.empty()
         self.createList()

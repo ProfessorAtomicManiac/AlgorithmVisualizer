@@ -66,6 +66,7 @@ class OptionActions():
 
         # Switch on options
         window.options_screen = True
+        options_group.empty()
 
         # Draw everything
         options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
@@ -99,7 +100,7 @@ class OptionActions():
         window.options_screen = False
 
 '''TODO: These classes are inconsistent with being entirely static and being an instance based class. Make it consistent
-so initalization is easier'''
+so initalization is consistent'''
 class SortingActions():
     ''' Displays the sorting screen duh
         window = window class
@@ -107,12 +108,15 @@ class SortingActions():
         args[1] = options_group
         args[2] = sorting_group
     '''
+    # TODO: Auxillary array kinda broken when you change size
     '''This class has constructor so we can construct one array that all methods can access'''
-    def __init__(self, window, screen_group, sorting_group, aux_sorting_group, scroll_group, midi):
+    def __init__(self, window, screen_group, sorting_group, aux_sorting_group, scroll_group, options_group, text_box_group, midi):
         screen_group.empty()
         sorting_group.empty()
         aux_sorting_group.empty()
         scroll_group.empty()
+        options_group.empty()
+        text_box_group.empty()
         # Constants
         self.TITLE_Y = 50
         # Margins for all boxes
@@ -132,6 +136,8 @@ class SortingActions():
         self.window = window
         self.screen_group = screen_group
         self.scroll_group = scroll_group
+        self.options_group = options_group
+        self.text_box_group = text_box_group
 
         self.SORTING_X = (window.window.get_size()[0] - self.CONFIG_WIDTH - 2*self.MARGIN_X)/2 + self.MARGIN_X
         self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
@@ -143,12 +149,15 @@ class SortingActions():
         self.aux_array = None
 
     def update(self):
+        # TODO: add if options window is open too
         if (self.scroll_bar.extended):
             self.toggle_aux.set_unpressable()
             self.generate.set_unpressable()
+            self.advanced.set_unpressable()
         else:
             self.toggle_aux.set_pressable()
             self.generate.set_pressable()
+            self.advanced.set_pressable()
 
     def on_reset(self):
         self.window.event.set()
@@ -220,10 +229,12 @@ class SortingActions():
         self.reset_button = Wrapper.TextButton(Wrapper.DefaultText.text("Reset", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), Wrapper.sequential_functions(self.array.reset, self.on_reset), self.window)
         self.toggle_aux = Wrapper.TextButton(Wrapper.DefaultText.text("Auxillary Array", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 3 * button_margin), Wrapper.sequential_functions(self.toggle_aux_array, self.on_reset), self.window)
         self.generate = Wrapper.TextButton(Wrapper.DefaultText.text("Generate", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 4 * button_margin), Wrapper.sequential_functions(self.array.generate, self.on_reset), self.window)
+        self.advanced = Wrapper.TextButton(Wrapper.DefaultText.text("Advanced", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 5 * button_margin), Wrapper.sequential_functions(self.show_advanced, self.on_reset), self.window)
         self.screen_group.add(self.shuffle_button)
         self.screen_group.add(self.reset_button)
         self.screen_group.add(self.toggle_aux)
         self.screen_group.add(self.generate)
+        self.screen_group.add(self.advanced)
 
         self.selection_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Selection Sort", Wrapper.FontSizes.BUTTON_SIZE), selection_sort, self.window)
         self.insertion_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Insertion Sort", Wrapper.FontSizes.BUTTON_SIZE), insertion_sort, self.window)
@@ -247,8 +258,39 @@ class SortingActions():
             self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
             self.aux_array = None
 
-    def input_size():
-        pass
+    def show_advanced(self):
+        # Constants
+        OPTIONS_WIDTH = 300
+        OPTIONS_HEIGHT = 300
 
-    def input_time_delay():
-        pass
+        # Switch on options
+        self.window.options_screen = True
+
+        # Draw everything
+        self.options_group.empty()
+        self.options_group.add(Wrapper.Background((self.window.window.get_size()[0]/2, self.window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
+        
+        # Where the text starts rendering
+        text_start = self.window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
+        
+        self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Time Delay", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start), self.window, False, Wrapper.Screen.NONE))
+        self.delay_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.delay), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 50), (200, 50), lambda a : self.array.change_delay(a), self.window, " secs", 1)
+        
+        self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Array Size", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 100), self.window, False, Wrapper.Screen.NONE))
+        self.size_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.size), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 150), (200, 50), lambda a : self.array.change_size(a), self.window, "", 1)
+        self.options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Return", Wrapper.FontSizes.BUTTON_SIZE), (self.window.window.get_size()[0]/2, text_start + 210), self.close_window, self.window, False, Wrapper.Screen.NONE))
+        self.text_box_group.add(self.delay_textbox)
+        self.text_box_group.add(self.size_textbox)
+        
+    # Input (specifically buttons)
+
+    '''@args = options_group'''
+    def close_window(self):
+        self.delay_textbox.do_func()
+        self.size_textbox.do_func()
+        self.array_length = self.array.size
+        self.options_group.empty()
+        self.text_box_group.empty()
+        # TODO: Fix glitch where when you press the return button, it will simultaneously press the button behind it
+        time.sleep(0.30)
+        self.window.options_screen = False

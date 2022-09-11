@@ -38,6 +38,7 @@ class Colors():
 
 class FontSizes():
     BUTTON_SIZE = 25
+    SUB_TITLE_SIZE = 35
     TITLE_SIZE = 50
 
 class Window():
@@ -91,7 +92,10 @@ class DefaultText():
         ubuntu_font = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", font_size)
         return TextArgs(text, ubuntu_font, True, Colors.TEXT_COLOR)
 
-    
+class Fonts():
+
+    def __init__(self, font_size):
+        self.UBUNTU_FONT = pygame.font.Font("Fonts/Ubuntu-Bold.ttf", font_size)
 
 class Text(pygame.sprite.Sprite):
     ''' Creates text
@@ -575,6 +579,124 @@ class Background(pygame.sprite.Sprite):
 
     def set_coords(self, coords):
         self.coords = coords
+
+class TextBox(pygame.sprite.Sprite):
+
+    ''' default_text = the text that will show up when first initialized
+        coords = the coordinates of the textbox (centered at those coords)
+        dim = the dimensions of the textbox
+        function = what the textbox will do with the new values (MUST HAVE the text as an argument)
+        it should also return what value it accepted and what the textbox will change to
+        window = window class object
+        after_text = what will appear after the text (That the user cannot change)
+        is_integer = whether the input should only be in decimal numbers
+            1 = decimals only
+            0 = no restrictions
+    '''
+    def __init__(self, default_text, coords, dim, function, window, after_text, restrict):
+        super().__init__()
+
+        # Constants
+        self.margin = 15
+
+        # Initialization
+        self.default_text = default_text
+        self.coords = coords
+        self.dim = dim
+        self.restrict = restrict
+        self.func = function
+        self.image = pygame.Surface(dim)
+        self.rect = self.image.get_rect(center = coords)
+        self.window = window
+        self.image.fill("#FFFFFF")
+        self.after_text = after_text
+
+        self.text_arg = default_text
+        self.text = default_text.text
+        self.text_rect = self.text_arg.render().get_rect(center = coords)
+        self.render()
+
+        # If you can type in the box
+        self.active = False
+
+        # extra thread to make typing feasible
+        #self.thread = None
+    
+    def set_text(self, text):
+        self.text = text
+        self.render()
+
+    def render(self):
+        self.text += self.after_text
+        self.text_arg.text = self.text
+
+        
+        self.text_rect = self.text_arg.render().get_rect(center = self.coords)
+        # check if the box can fit all the stuff
+        if (self.text_rect.width > self.rect.width - 2 * self.margin):
+            if (len(self.after_text) > 0):
+                self.text = self.text[:-len(self.after_text)]
+            return -1
+
+        self.window.window.blit(self.text_arg.render(), self.text_rect)
+        if (len(self.after_text) > 0):
+            self.text = self.text[:-len(self.after_text)]
+        return 0
+
+    '''
+    def set_thread(self, thread):
+        if self.thread is not None:
+            self.window.event.set()
+            self.thread.join()
+        self.window.event.clear()
+        self.thread = thread
+
+    def clear_thread(self):
+        self.thread = None
+        self.window.event.set()
+    '''
+
+    def update(self, events_list):
+        self.window.window.blit(self.text_arg.render(), self.text_rect)
+        self.update_func(events_list)
+        #update_func_thread = sequential_functions(add_args_to_func(self.update_func, events_list), self.clear_thread)
+        #self.set_thread(threading.Thread(target=update_func_thread))
+        #self.thread.start()
+
+    
+    def update_func(self, events_list):
+        for event in events_list:
+            self.window.window.blit(self.text_arg.render(), self.text_rect)
+            # if mouse down and mouse outside of box
+            if (event.type == pygame.MOUSEBUTTONDOWN):
+                
+                self.active = self.rect.collidepoint(event.pos)
+
+            if (event.type == pygame.KEYDOWN and self.active):
+                if (event.key == pygame.K_RETURN):
+                    self.active = False
+
+                elif (event.key == pygame.K_BACKSPACE):
+                    self.text = self.text[:-1]
+
+                else:
+                    self.text += event.unicode
+                    if (self.restrict == 1):
+                        # check that it is a valid number
+                        try:
+                            float(self.text)
+                        except ValueError:
+                            print("Cannot type in characters")
+                            self.text = self.text[:-1]
+                
+                    # check if number fits in box
+                    if (self.render() == -1):
+                        print("Text too large")
+                        self.text = self.text[:-1]
+                self.render()
+
+    def do_func(self):
+        self.set_text(str(self.func(self.text)))        
 
 class Midi():
 
