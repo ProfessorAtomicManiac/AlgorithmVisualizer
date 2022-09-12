@@ -121,7 +121,7 @@ class SortingActions():
         self.TITLE_Y = 50
         # Margins for all boxes
         self.MARGIN_X = 25
-        self.MARGIN_Y = 25
+        self.MARGIN_Y = 10
         # Calculations for certain values
         self.SORTING_WIDTH = (window.window.get_size()[0] - 3*self.MARGIN_X)*(3/4) # Ideally is ~800
         self.SORTING_HEIGHT = (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)
@@ -208,6 +208,11 @@ class SortingActions():
             set_sorting_thread(threading.Thread(target=counting_sort))
             return self.sorting_thread.start()
 
+        def bogo_sort():
+            bogo_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.bogo_sort, self.array, self.window.event), sort_done)
+            set_sorting_thread(threading.Thread(target=bogo_sort))
+            return self.sorting_thread.start()
+
         def set_sorting_thread(thread):
             if self.sorting_thread is not None:
                 self.window.event.set()
@@ -222,7 +227,7 @@ class SortingActions():
         self.sorting_thread = None
 
         # Button Constants
-        button_col_top = 150 # Where the buttons start
+        button_col_top = 130 # Where the buttons start
         button_margin = 70
 
         self.shuffle_button = Wrapper.TextButton(Wrapper.DefaultText.text("Shuffle", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top), Wrapper.sequential_functions(self.array.shuffle, self.on_reset), self.window)
@@ -243,8 +248,10 @@ class SortingActions():
         self.heap_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Heap Sort", Wrapper.FontSizes.BUTTON_SIZE), heap_sort, self.window)
         self.radix_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Radix Sort", Wrapper.FontSizes.BUTTON_SIZE), radix_sort, self.window)
         self.counting_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Counting Sort", Wrapper.FontSizes.BUTTON_SIZE), counting_sort, self.window)
-        buttons = (self.radix_sort_button, self.quick_sort_button, self.merge_sort_button, self.heap_sort_button, self.insertion_sort_button, self.selection_sort_button, self.counting_sort_button)
-        self.scroll_bar = (Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), 290), (200, 50), self.scroll_group, self.window))
+        self.bogo_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Bogo Sort", Wrapper.FontSizes.BUTTON_SIZE), bogo_sort, self.window)
+
+        buttons = (self.radix_sort_button, self.quick_sort_button, self.merge_sort_button, self.heap_sort_button, self.insertion_sort_button, self.selection_sort_button, self.counting_sort_button, self.bogo_sort_button)
+        self.scroll_bar = (Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group, self.window))
         # Options button
         OptionActions.display_options_button(self.window, screen_group, options_screen_group)
         return self.scroll_bar

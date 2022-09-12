@@ -1,5 +1,8 @@
 ''' Will do a "glissando" up the array indexes when the array is done sorting
 '''
+import random
+
+
 def finish(arr):
     for i in range(0, arr.length()):
         arr.get(i)
@@ -352,3 +355,34 @@ def counting_sort(arr, event, min, max, aux):
             if (event.is_set()):
                 return
     finish(arr)
+
+''' Bogo Sort
+    Will shuffle the array until it is sorted
+'''
+def is_sorted(arr, event):
+    for i in range(0, arr.length() - 1):
+        if (arr.get(i) > arr.get(i + 1)):
+            return -1
+        if (event.is_set()):
+            return 0
+    return 1
+
+def shuffle(arr, event):
+    for i in range(0, arr.length()):
+        r = random.randint(0, arr.length() - 1)
+        arr.swap(i, r)
+        if (event.is_set()):
+            return -1
+    return 0
+
+def bogo_sort(arr, event):
+    num = -1
+    while (num == -1):
+        if (shuffle(arr, event) == -1):
+            num = 0
+            break
+        num = is_sorted(arr, event)
+
+        
+    if (num == 1):
+        finish(arr)
