@@ -1,8 +1,7 @@
-''' Will do a "glissando" up the array indexes when the array is done sorting
-'''
 import random
 
-
+''' Will do a "glissando" up the array indexes when the array is done sorting
+'''
 def finish(arr):
     for i in range(0, arr.length()):
         arr.get(i)
@@ -11,7 +10,7 @@ def finish(arr):
     The algorithm will iterate through the entire array to find the minimum, then replace the lowest unsorted index with that element
     This repeats until the entire array is sorted
 '''
-def selection_sort(arr, event):
+def selection_sort(arr, event, aux = None):
     for i in range(0, arr.length()):
         min = i
         for j in range(i+1, arr.length()):
@@ -27,7 +26,7 @@ def selection_sort(arr, event):
     When it finds an element that is less than the element at index i, it will replace it
     As it iterates to find that element, it will shift all elements greater than it to the right
 '''
-def insertion_sort(arr, event):
+def insertion_sort(arr, event, aux = None):
     for i in range(1, arr.length()):
         key = arr.get(i)
         j = i-1
@@ -44,7 +43,11 @@ def insertion_sort(arr, event):
     Same with the right side
     This repeats until the array is sorted
 '''
-def quick_sort(arr, event, begin, end, isFinished = False):
+def quick_sort(arr, event, aux = None):
+    quick_sort(arr, event, 0, arr.length())
+    finish(arr)
+
+def quick_sort(arr, event, begin, end):
     if (begin < end):
         pivot = end-1
         low = begin
@@ -59,8 +62,6 @@ def quick_sort(arr, event, begin, end, isFinished = False):
         arr.swap(low, pivot)
         quick_sort(arr, event, begin, low)
         quick_sort(arr, event, low+1, end)
-    if isFinished:
-        finish(arr)
 
 ''' Merge Sort - O(nlogn)
     The array will be split into two even parts (not exactly even if the array has an odd number of elements)
@@ -69,7 +70,11 @@ def quick_sort(arr, event, begin, end, isFinished = False):
     and merged into a single array
     This continues until the entire array is sorted
 '''
-def merge_sort(arr, event, begin, end, isFinished = False):
+def merge_sort(arr, event, aux = None):
+    merge_sort(arr, event, 0, arr.length())
+    finish(arr)
+
+def merge_sort(arr, event, begin, end):
     if (begin+1 < end):
         mid = begin + ((end-begin)+1)//2
         merge_sort(arr, event, begin, mid)
@@ -101,8 +106,6 @@ def merge_sort(arr, event, begin, end, isFinished = False):
             k += 1
             if (event.is_set()):
                 return
-    if (isFinished):
-        finish(arr)
 
 ''' Heap Sort (nlogn) - Also the implementation of the Priority Queue using the Heap Data Structure
     All elements of the array will be inserted into what is known as a "Heap".
@@ -202,7 +205,7 @@ class Heap():
         self.heap[b] = temp
         self.arr.swap(a, b)
 
-def heap_sort(arr, event):
+def heap_sort(arr, event, aux = None):
     heap = Heap(arr, event)
     for i in range(0, arr.length()):
         heap.insert(arr.get(i))
@@ -220,7 +223,6 @@ def heap_sort(arr, event):
 ''' Radix Sort O(d*(n+b)) - where d is the number of digits in base b, n is the number of elements, and b is the base/bucket size
     I don't feel like typing an explanation just know it has to do with sorting each digit
     If you want something cool, make the array size big
-    you can do that on line 126 in UI.py. I will eventually add it to the UI don't worry
 '''
 def radix_sort(arr, event, aux):
     maxValue = 0
@@ -375,7 +377,7 @@ def shuffle(arr, event):
             return -1
     return 0
 
-def bogo_sort(arr, event):
+def bogo_sort(arr, event, aux = None):
     num = -1
     while (num == -1):
         if (shuffle(arr, event) == -1):
@@ -386,3 +388,15 @@ def bogo_sort(arr, event):
         
     if (num == 1):
         finish(arr)
+
+# Sorting Algorithm Input
+class SA:
+    ''' name = how it will appear on the dropdown menu
+        sort = sort function it will use
+    '''
+    def __init__(self, name, sort):
+        self.name = name
+        self.sort = sort
+
+sorting_algos = [SA("Selection Sort", selection_sort), SA("Insertion Sort", insertion_sort), SA("Quick Sort", quick_sort), SA("Merge Sort", merge_sort), 
+SA("Heap Sort", heap_sort), SA("Radix Sort", radix_sort), SA("Counting Sort", counting_sort), SA("Bogo Sort", bogo_sort)]

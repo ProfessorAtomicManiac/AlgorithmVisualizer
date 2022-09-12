@@ -2,6 +2,7 @@ from sys import exit
 
 import pygame
 import pygame.midi
+import this
 
 import UI.UI as UI
 import UI.Wrapper as Wrapper

@@ -145,7 +145,7 @@ class SortingActions():
         self.aux_sorting_group = aux_sorting_group
         sorting_group.empty()
         #print("{},{}  {},{}".format(self.SORTING_WIDTH, self.SORTING_HEIGHT, self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
-        self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), self.array_length, midi)
+        self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), 1, self.array_length, midi)
         self.aux_array = None
 
     def update(self):
@@ -172,47 +172,7 @@ class SortingActions():
         screen_group.empty()
         screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window))
         screen_group.add(Wrapper.Background((self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
-
-        def selection_sort():
-            selection_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.selection_sort, self.array, self.window.event), sort_done)
-            set_sorting_thread(threading.Thread(target=selection_sort))
-            return self.sorting_thread.start()
-
-        def insertion_sort():
-            insertion_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.insertion_sort, self.array, self.window.event), sort_done)
-            set_sorting_thread(threading.Thread(target=insertion_sort))
-            return self.sorting_thread.start()
-
-        def quick_sort():
-            quick_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.quick_sort, self.array, self.window.event, 0, self.array.length(), True), sort_done)
-            set_sorting_thread(threading.Thread(target=quick_sort))
-            return self.sorting_thread.start()
         
-        def merge_sort():
-            merge_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.merge_sort, self.array, self.window.event, 0, self.array.length(), True), sort_done)
-            set_sorting_thread(threading.Thread(target=merge_sort))
-            return self.sorting_thread.start()
-
-        def heap_sort():
-            heap_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.heap_sort, self.array, self.window.event), sort_done)
-            set_sorting_thread(threading.Thread(target=heap_sort))
-            return self.sorting_thread.start()
-
-        def radix_sort():
-            radix_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.radix_sort, self.array, self.window.event, self.aux_array), sort_done)
-            set_sorting_thread(threading.Thread(target=radix_sort))
-            return self.sorting_thread.start()
-        
-        def counting_sort():
-            counting_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.counting_sort, self.array, self.window.event, 0, self.array_length, self.aux_array), sort_done)
-            set_sorting_thread(threading.Thread(target=counting_sort))
-            return self.sorting_thread.start()
-
-        def bogo_sort():
-            bogo_sort = Wrapper.sequential_functions(Wrapper.add_args_to_func(Sorting.bogo_sort, self.array, self.window.event), sort_done)
-            set_sorting_thread(threading.Thread(target=bogo_sort))
-            return self.sorting_thread.start()
-
         def set_sorting_thread(thread):
             if self.sorting_thread is not None:
                 self.window.event.set()
@@ -226,31 +186,35 @@ class SortingActions():
 
         self.sorting_thread = None
 
+
+        buttons = []
+        def bind_function(sort_input):
+            def func():
+                sort_algo = Wrapper.add_args_to_func(sort_input.sort, self.array, self.window.event, self.aux_array)
+                set_sorting_thread(threading.Thread(target=sort_algo))
+                return self.sorting_thread.start()
+            func.__name__ = sort_input.name
+            return func
+
+        for sort_input in Sorting.sorting_algos:
+            buttons.append(Wrapper.ScrollButton(Wrapper.DefaultText.text(sort_input.name, Wrapper.FontSizes.BUTTON_SIZE), bind_function(sort_input), self.window))
+        
         # Button Constants
         button_col_top = 130 # Where the buttons start
         button_margin = 70
 
-        self.shuffle_button = Wrapper.TextButton(Wrapper.DefaultText.text("Shuffle", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top), Wrapper.sequential_functions(self.array.shuffle, self.on_reset), self.window)
-        self.reset_button = Wrapper.TextButton(Wrapper.DefaultText.text("Reset", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), Wrapper.sequential_functions(self.array.reset, self.on_reset), self.window)
-        self.toggle_aux = Wrapper.TextButton(Wrapper.DefaultText.text("Auxillary Array", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 3 * button_margin), Wrapper.sequential_functions(self.toggle_aux_array, self.on_reset), self.window)
-        self.generate = Wrapper.TextButton(Wrapper.DefaultText.text("Generate", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 4 * button_margin), Wrapper.sequential_functions(self.array.generate, self.on_reset), self.window)
-        self.advanced = Wrapper.TextButton(Wrapper.DefaultText.text("Advanced", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 5 * button_margin), Wrapper.sequential_functions(self.show_advanced, self.on_reset), self.window)
+        self.shuffle_button = Wrapper.TextButton(Wrapper.DefaultText.text("Shuffle", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top), Wrapper.sequential_functions(self.on_reset, self.array.shuffle), self.window)
+        self.reset_button = Wrapper.TextButton(Wrapper.DefaultText.text("Reset", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), Wrapper.sequential_functions(self.on_reset, self.array.reset), self.window)
+        self.toggle_aux = Wrapper.TextButton(Wrapper.DefaultText.text("Auxillary Array", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 3 * button_margin), Wrapper.sequential_functions(self.on_reset, self.toggle_aux_array), self.window)
+        self.generate = Wrapper.TextButton(Wrapper.DefaultText.text("Generate", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 4 * button_margin), Wrapper.sequential_functions(self.on_reset, self.array.generate), self.window)
+        self.advanced = Wrapper.TextButton(Wrapper.DefaultText.text("Advanced", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 5 * button_margin), Wrapper.sequential_functions(self.on_reset, self.show_advanced), self.window)
         self.screen_group.add(self.shuffle_button)
         self.screen_group.add(self.reset_button)
         self.screen_group.add(self.toggle_aux)
         self.screen_group.add(self.generate)
         self.screen_group.add(self.advanced)
 
-        self.selection_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Selection Sort", Wrapper.FontSizes.BUTTON_SIZE), selection_sort, self.window)
-        self.insertion_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Insertion Sort", Wrapper.FontSizes.BUTTON_SIZE), insertion_sort, self.window)
-        self.quick_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Quick Sort", Wrapper.FontSizes.BUTTON_SIZE), quick_sort, self.window)
-        self.merge_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Merge Sort", Wrapper.FontSizes.BUTTON_SIZE), merge_sort, self.window)
-        self.heap_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Heap Sort", Wrapper.FontSizes.BUTTON_SIZE), heap_sort, self.window)
-        self.radix_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Radix Sort", Wrapper.FontSizes.BUTTON_SIZE), radix_sort, self.window)
-        self.counting_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Counting Sort", Wrapper.FontSizes.BUTTON_SIZE), counting_sort, self.window)
-        self.bogo_sort_button = Wrapper.ScrollButton(Wrapper.DefaultText.text("Bogo Sort", Wrapper.FontSizes.BUTTON_SIZE), bogo_sort, self.window)
-
-        buttons = (self.radix_sort_button, self.quick_sort_button, self.merge_sort_button, self.heap_sort_button, self.insertion_sort_button, self.selection_sort_button, self.counting_sort_button, self.bogo_sort_button)
+        
         self.scroll_bar = (Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group, self.window))
         # Options button
         OptionActions.display_options_button(self.window, screen_group, options_screen_group)
