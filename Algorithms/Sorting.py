@@ -44,10 +44,10 @@ def insertion_sort(arr, event, aux = None):
     This repeats until the array is sorted
 '''
 def quick_sort(arr, event, aux = None):
-    quick_sort(arr, event, 0, arr.length())
+    quick_sort_method(arr, event, 0, arr.length())
     finish(arr)
 
-def quick_sort(arr, event, begin, end):
+def quick_sort_method(arr, event, begin, end):
     if (begin < end):
         pivot = end-1
         low = begin
@@ -60,8 +60,8 @@ def quick_sort(arr, event, begin, end):
                 return
 
         arr.swap(low, pivot)
-        quick_sort(arr, event, begin, low)
-        quick_sort(arr, event, low+1, end)
+        quick_sort_method(arr, event, begin, low)
+        quick_sort_method(arr, event, low+1, end)
 
 ''' Merge Sort - O(nlogn)
     The array will be split into two even parts (not exactly even if the array has an odd number of elements)
@@ -71,14 +71,14 @@ def quick_sort(arr, event, begin, end):
     This continues until the entire array is sorted
 '''
 def merge_sort(arr, event, aux = None):
-    merge_sort(arr, event, 0, arr.length())
+    merge_sort_method(arr, event, 0, arr.length())
     finish(arr)
 
-def merge_sort(arr, event, begin, end):
+def merge_sort_method(arr, event, begin, end):
     if (begin+1 < end):
         mid = begin + ((end-begin)+1)//2
-        merge_sort(arr, event, begin, mid)
-        merge_sort(arr, event, mid, end)
+        merge_sort_method(arr, event, begin, mid)
+        merge_sort_method(arr, event, mid, end)
         arrL = arr.list[begin:mid]
         arrR = arr.list[mid:end]
         i = j = 0
