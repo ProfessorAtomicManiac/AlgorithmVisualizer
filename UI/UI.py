@@ -150,7 +150,7 @@ class SortingActions():
 
     def update(self):
         # TODO: add if options window is open too
-        if (self.scroll_bar.extended):
+        if (self.scroll_bar.extended or self.window.options_screen):
             self.toggle_aux.set_unpressable()
             self.generate.set_unpressable()
             self.advanced.set_unpressable()
@@ -190,7 +190,7 @@ class SortingActions():
         buttons = []
         def bind_function(sort_input):
             def func():
-                sort_algo = Wrapper.add_args_to_func(sort_input.sort, self.array, self.window.event, self.aux_array)
+                sort_algo = Wrapper.sequential_functions(Wrapper.add_args_to_func(sort_input.sort, self.array, self.window.event, self.aux_array), sort_done)
                 set_sorting_thread(threading.Thread(target=sort_algo))
                 return self.sorting_thread.start()
             func.__name__ = sort_input.name
@@ -223,7 +223,7 @@ class SortingActions():
     def toggle_aux_array(self):
         if self.aux_array == None:
             self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
-            self.aux_array = Array(self.aux_sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y), self.array_length, self.midi)
+            self.aux_array = Array(self.aux_sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y), 1, self.array_length, self.midi)
         else:
             self.aux_array.kill()
             self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
@@ -232,7 +232,7 @@ class SortingActions():
     def show_advanced(self):
         # Constants
         OPTIONS_WIDTH = 300
-        OPTIONS_HEIGHT = 300
+        OPTIONS_HEIGHT = 400
 
         # Switch on options
         self.window.options_screen = True

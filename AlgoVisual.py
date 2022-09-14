@@ -44,7 +44,6 @@ def main(fps):
                 exit()
         
         # apparentally python has no switch cases?
-        # TODO: either update to python 3.10 or create a dictionary
         # This should only have logic for what to do when its on screen x or something like that
         if (window.screen == Wrapper.Screen.MAIN_MENU and window.window_size_change):
             UI.MainMenuActions.display_main_menu(window, False, screen_group, options_screen_group)

@@ -9,9 +9,9 @@ class ArrayElement(pygame.sprite.Sprite):
         @dim = dimensions of the element
         @visited = needed to check whether some array index is being accessed/swapped (boolean array)
         @list = needed to check if element was swapped and should update the swappage (regular integer array)
-        @height_unit = unit to help determine height of the array element (self.array_dim[1]/self.end)
+        @height_unit = unit to help determine height of the array element
     '''
-    def __init__(self, coords, dim, visited, list, height_unit, index):
+    def __init__(self, coords, dim, visited, list, height_unit, index, beg):
         super().__init__()
         self.image = pygame.Surface(dim)
         self.color = "#ffffff"
@@ -24,6 +24,7 @@ class ArrayElement(pygame.sprite.Sprite):
         self.height_unit = height_unit
         self.index = index
         self.val = list[index]
+        self.beg = beg
 
         # Timing how long the visited array should be red
         self.still_colored = False
@@ -41,8 +42,8 @@ class ArrayElement(pygame.sprite.Sprite):
             #print("index is changed")
             dim = list(self.dim)
             # TODO: Sometimes crashes due to null pointer, seems to happen when you are sorting then you press "advanced"
-            dim[1] = self.list[self.index] * self.height_unit
-            assert self.list[self.index] >= 0
+            dim[1] = (self.list[self.index] - self.beg) * self.height_unit
+            assert (self.list[self.index] - self.beg) >= 0
 
             self.val = self.list[self.index]
             self.dim = tuple(dim)
@@ -77,9 +78,6 @@ class Array():
         self.array_group = array_group
         self.list = []
         self.visited = []
-        for i in range(1, size+1):
-            self.list.append(i)
-            self.visited.append(False)
         self.dim = dim
         self.coords = coords
         self.beg = beg
@@ -87,7 +85,7 @@ class Array():
         self.delay = delay
         self.midi = midi
         self.size = size
-        self.createList()
+        self.reset()
         
     def change_delay(self, delay):
         try:
@@ -113,12 +111,12 @@ class Array():
     def createList(self):
         width = self.dim[0]/len(self.list)
         y = self.coords[1] + self.dim[1]
-        height_unit = self.dim[1] / (self.end - self.beg + 1)
+        height_unit = self.dim[1] / (self.end - self.beg)
 
         for i in range(1, len(self.list)+1):
-            height = (self.list[i-1] - self.beg + 1) * self.dim[1] / (self.end - self.beg + 1)
-            x = self.coords[0] + (i-1)*self.dim[0]/len(self.list)
-            self.array_group.add(ArrayElement((x,y), (width, height), self.visited, self.list, height_unit, i-1))
+            height = (self.list[i-1] - self.beg) * height_unit
+            x = self.coords[0] + (i-1) * width
+            self.array_group.add(ArrayElement((x,y), (width, height), self.visited, self.list, height_unit, i-1, self.beg))
             #print("{},{}  {},{}".format(x, y, width, height))
 
     # TODO: Get rid of size parameter
@@ -130,7 +128,7 @@ class Array():
         self.end = end
         for i in range(0, size):
             self.visited.append(False)
-            self.list.append(0)
+            self.list.append(beg)
         self.createList()
 
     def getList(self):

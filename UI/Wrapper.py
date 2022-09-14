@@ -643,19 +643,6 @@ class TextBox(pygame.sprite.Sprite):
             self.text = self.text[:-len(self.after_text)]
         return 0
 
-    '''
-    def set_thread(self, thread):
-        if self.thread is not None:
-            self.window.event.set()
-            self.thread.join()
-        self.window.event.clear()
-        self.thread = thread
-
-    def clear_thread(self):
-        self.thread = None
-        self.window.event.set()
-    '''
-
     def update(self, events_list):
         self.window.window.blit(self.text_arg.render(), self.text_rect)
         self.update_func(events_list)
@@ -697,6 +684,9 @@ class TextBox(pygame.sprite.Sprite):
 
     def do_func(self):
         self.set_text(str(self.func(self.text)))        
+
+class Slider(pygame.sprite.Sprite):
+    pass
 
 class Midi():
 

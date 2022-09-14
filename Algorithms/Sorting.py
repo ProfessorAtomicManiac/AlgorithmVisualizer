@@ -302,16 +302,16 @@ def getDigit(num, digit):
     min = smallest element in arr
     max = biggest element in arr
 '''
-def counting_sort(arr, event, min, max, aux):
+def counting_sort(arr, event, aux):
     if (aux == None):
         count = []
         ans = []
 
-        for i in range(max - min + 1):
+        for i in range(arr.end - arr.beg + 1):
             count.append(0)
         
         for i in range(arr.length()):
-            count[arr.get(i) - min] += 1
+            count[arr.get(i) - arr.beg] += 1
             ans.append(0)
             if (event.is_set()):
                 return
@@ -322,8 +322,8 @@ def counting_sort(arr, event, min, max, aux):
                 return
 
         for i in range(arr.length()-1, -1, -1):
-            ans[count[arr.get(i)] - 1] = arr.get(i)
-            count[arr.get(i)] -= 1
+            ans[count[arr.get(i) - arr.beg] - 1] = arr.get(i)
+            count[arr.get(i) - arr.beg] -= 1
             if (event.is_set()):
                 return
 
@@ -332,11 +332,11 @@ def counting_sort(arr, event, min, max, aux):
             if (event.is_set()):
                 return
     else:
-        aux.setList(max - min + 1, arr.length())
+        aux.setList(arr.end - arr.beg + 1, 0, arr.length())
         ans = []
         
         for i in range(arr.length()):
-            aux.replace(arr.get(i) - min, aux.get(arr.get(i) - min) + 1)
+            aux.replace(arr.get(i) - arr.beg, aux.get(arr.get(i) - arr.beg) + 1)
             ans.append(0)
             if (event.is_set()):
                 return
@@ -347,8 +347,8 @@ def counting_sort(arr, event, min, max, aux):
                 return
 
         for i in range(arr.length()-1, -1, -1):
-            ans[aux.get(arr.get(i)) - 1] = arr.get(i)
-            aux.replace(arr.get(i), aux.get(arr.get(i)) - 1)
+            ans[aux.get(arr.get(i) - arr.beg) - 1] = arr.get(i)
+            aux.replace(arr.get(i) - arr.beg, aux.get(arr.get(i) - arr.beg) - 1)
             if (event.is_set()):
                 return
 
