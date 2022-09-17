@@ -173,12 +173,14 @@ class Button(pygame.sprite.Sprite):
         self.accel = 0
 
         self.can_press = True # if in options and you don't want buttons behind the options to be pressed
+        self.can_press_timer = 0
+        self.timer_is_handled = True # False means its currently handling it
 
     def player_input(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+        if self.can_press and self.rect.collidepoint(pygame.mouse.get_pos()):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
-            if pygame.mouse.get_pressed()[0] and not self.handled and self.can_press:
+            if pygame.mouse.get_pressed()[0] and not self.handled:
                 self.function()
                 self.handled = True
             else:
@@ -206,7 +208,9 @@ class Button(pygame.sprite.Sprite):
             self.kill()
 
     def set_pressable(self):
-        self.can_press = True
+        if (not self.can_press and self.timer_is_handled):
+            self.can_press_timer = 0.0001
+            self.timer_is_handled = False
 
     def set_unpressable(self):
         self.can_press = False
@@ -217,6 +221,13 @@ class Button(pygame.sprite.Sprite):
         if self.will_slide:
             self.slide()
         self.destroy()
+        #print(self.can_press_timer)
+        if (self.can_press_timer != 0):
+            self.can_press_timer += 0.1
+        if (self.can_press_timer > 2):
+            self.can_press = True
+            self.timer_is_handled = True
+            self.can_press_timer = 0
 
 class TextButton(pygame.sprite.Sprite):
     # https://www.clickminded.com/button-generator/
@@ -268,12 +279,14 @@ class TextButton(pygame.sprite.Sprite):
         self.handled = False
 
         self.can_press = True
+        self.can_press_timer = 0
+        self.timer_is_handled = True
 
     def player_input(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+        if self.can_press and self.rect.collidepoint(pygame.mouse.get_pos()):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
-            if pygame.mouse.get_pressed()[0] and not self.handled and self.can_press:
+            if pygame.mouse.get_pressed()[0] and not self.handled:
                 self.function()
                 self.handled = True
             else:
@@ -306,7 +319,10 @@ class TextButton(pygame.sprite.Sprite):
         self.function = function
     
     def set_pressable(self):
-        self.can_press = True
+        if (not self.can_press and self.timer_is_handled):
+            self.can_press_timer = 0.0001
+            self.timer_is_handled = False
+
 
     def set_unpressable(self):
         self.can_press = False
@@ -319,6 +335,13 @@ class TextButton(pygame.sprite.Sprite):
         if self.will_slide:
             self.slide()
         self.destroy()
+
+        if (self.can_press_timer != 0):
+            self.can_press_timer += 0.1
+        if (self.can_press_timer > 2):
+            self.can_press = True
+            self.timer_is_handled = True
+            self.can_press_timer = 0
 
 # TODO : Fixed scuffed position for scrollbar when scrolling thru the first two elements using arrow keys
 class ScrollBar():
@@ -337,7 +360,7 @@ class ScrollBar():
         self.shift = how much the buttons should shift because of scroll
         
     '''
-    def __init__(self, buttons, coords, dim, scroll_group, window, max_height = 200):
+    def __init__(self, buttons, coords, dim, scroll_group, window, default_text, max_height = 200):
         self.coords = coords
         self.dim = dim
         self.scroll_group = scroll_group
@@ -346,6 +369,7 @@ class ScrollBar():
         self.max_height = max_height
 
         self.extended = False
+        self.can_press = True
 
         TRIANGLE_BUTTON_WIDTH = 25
         self.TRIANGLE_BUTTON_HEIGHT = dim[1]
@@ -357,10 +381,11 @@ class ScrollBar():
         scroll_group.add(self.scroll_button)
 
         self.scroll_back = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + max_height/2), (TRIANGLE_BUTTON_WIDTH, max_height), Colors.BACKGROUND_SCROLL_COLOR)
-        self.scroll_bar_height = (max_height * max_height / (dim[1] * (len(buttons)))) 
+        #print("Max Height", max_height)
+        self.scroll_bar_height = (max_height * max_height / (dim[1] * (len(buttons) - 1))) 
         self.scroll_bar = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2), (TRIANGLE_BUTTON_WIDTH, self.scroll_bar_height), Colors.SCROLLBAR_COLOR)
 
-        self.selected = ScrollButton(DefaultText.text("Choose Sort", FontSizes.BUTTON_SIZE), None, window)
+        self.selected = ScrollButton(DefaultText.text(default_text, FontSizes.BUTTON_SIZE), None, window)
         self.selected.setCoords(coords)
         self.selected.setDim(dim)
         for button in buttons:
@@ -392,7 +417,7 @@ class ScrollBar():
                     self.selected.setCoords(self.coords)
                     self.selected.setDim(self.dim)
                     self.selected.is_chosen = True
-                    time.sleep(0.5) # TODO : Fix bug to not click buttons behind it
+                    time.sleep(0.3) # TODO : Fix bug to not click buttons behind it
                     self.toggle()
                     return
             
@@ -447,9 +472,10 @@ class ScrollBar():
         self.scroll_group.add(self.selected)
 
         for i in range(len(self.buttons)):
-            if (self.coords[1] + (i + 1)*self.dim[1] - self.shift - self.tolerance > self.coords[1] + self.max_height):
+            #print(i, (i + 1)*self.dim[1] - self.shift - self.tolerance, self.max_height + self.dim[1]/2, self.dim[1])
+            if (self.coords[1] + (i + 1)*self.dim[1] - self.shift - self.tolerance > self.coords[1] + self.max_height + self.dim[1]/2):
                 return
-            if (self.coords[1] + (i + 1)*self.dim[1] - self.shift + self.tolerance < self.coords[1] + self.dim[1]/2):
+            if (self.coords[1] + (i + 1)*self.dim[1] - self.shift + self.tolerance < self.coords[1] + self.dim[1]):
                 continue
             self.buttons[i].setCoords((self.coords[0], self.coords[1] + (i + 1)*self.dim[1] - self.shift))
             self.scroll_group.add(self.buttons[i])
@@ -467,6 +493,25 @@ class ScrollBar():
                     self.scroll_group.empty()
                     self.scroll_group.add(self.scroll_button)
                     self.scroll_group.add(self.selected)
+                    self.scroll_button.set_unpressable()
+                    self.selected.set_unpressable
+    
+    # If its in options, advanced tools, etc where a window would pop up, the button shouldn't be pressed
+    def check_overlap(self):
+        if (self.window.screen == Screen.NONE and self.screen != Screen.NONE):
+            self.scroll_button.set_unpressable()
+            self.selected.set_unpressable
+        else:
+            self.scroll_button.set_pressable()
+            self.selected.set_pressable()
+
+    def set_pressable(self):
+        self.scroll_button.set_pressable()
+        self.selected.set_pressable()
+
+    def set_unpressable(self): 
+        self.scroll_button.set_unpressable()
+        self.selected.set_unpressable()
                 
 class ScrollButton(pygame.sprite.Sprite):
     '''This is a scroll button class
@@ -497,6 +542,9 @@ class ScrollButton(pygame.sprite.Sprite):
         self.handled = False
 
         self.is_chosen = False
+        self.can_press = True
+        self.can_press_timer = 0
+        self.timer_is_handled = True
 
     def copy(self):
         copy = ScrollButton(self.copy_text, self.function, self.window)
@@ -509,10 +557,10 @@ class ScrollButton(pygame.sprite.Sprite):
         self.coords = coords
 
     def player_input(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()):
+        if self.can_press and self.rect.collidepoint(pygame.mouse.get_pos()):
             if not pygame.mouse.get_pressed()[0]:
                 self.handled = False
-            if pygame.mouse.get_pressed()[0] and (not self.window.options_screen) and not self.handled:
+            if pygame.mouse.get_pressed()[0] and not self.handled:
                 if (self.function != None):
                     self.function()
                 if (not self.is_chosen):
@@ -531,7 +579,9 @@ class ScrollButton(pygame.sprite.Sprite):
             self.set_pressable()
 
     def set_pressable(self):
-        self.can_press = True
+        if (not self.can_press and self.timer_is_handled):
+            self.can_press_timer = 0.0001
+            self.timer_is_handled = False
 
     def set_unpressable(self):
         self.can_press = False
@@ -547,6 +597,13 @@ class ScrollButton(pygame.sprite.Sprite):
         self.window.window.blit(self.text, self.textRect)
         self.check_overlap()
         self.player_input()
+
+        if (self.can_press_timer != 0):
+            self.can_press_timer += 0.1
+        if (self.can_press_timer > 2):
+            self.can_press = True
+            self.timer_is_handled = True
+            self.can_press_timer = 0
 
     
 class Background(pygame.sprite.Sprite):
@@ -673,12 +730,12 @@ class TextBox(pygame.sprite.Sprite):
                         try:
                             float(self.text)
                         except ValueError:
-                            print("Cannot type in characters")
+                            #print("Cannot type in characters")
                             self.text = self.text[:-1]
                 
                     # check if number fits in box
                     if (self.render() == -1):
-                        print("Text too large")
+                        #print("Text too large")
                         self.text = self.text[:-1]
                 self.render()
 
