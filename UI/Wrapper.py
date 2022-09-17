@@ -7,7 +7,6 @@ import pygame
 
 '''Contains code for various objects that are used frequently as sprites'''
 def add_args_to_func(func, *args, **kwargs):
-    #@func.wraps(inner) # This is optional TODO: Fix and understand wut this is
     def inner():
         return func(*args, **kwargs)
     return inner
@@ -104,7 +103,7 @@ class Slide(pygame.sprite.Sprite):
         dist = the distance it will be offset from the edge of screen
     '''
     def __init__(self, image, coords, dim, window, dist = 1200, will_slide = True, screen = None):
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
         self.image = image
         self.coords = coords
         self.will_slide = will_slide
@@ -149,7 +148,7 @@ class ButtonConfig(pygame.sprite.Sprite):
         Function = function that will run when button is pressed
     '''
     def __init__(self, images, coords, function, window):
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self)
         self.images = images
         self.image = images[0]
         self.rect = images[0].get_rect(center = coords)
@@ -205,7 +204,7 @@ class Text(Slide):
         super().__init__(image, coords, (0, 0), window, 800, will_slide, screen)
 
 # TODO: There is a double where a click registers as a double click
-class Button(Slide):
+class Button(ButtonConfig, Slide):
     '''This is an icon button class
        @images = image background of the button
        @coords = the icon will be centered at those coords
@@ -213,49 +212,14 @@ class Button(Slide):
        @window = the Window class object
     '''
     def __init__(self, images, coords, function, window, will_slide = True, screen = None):
-        self.images = images
-        self.function = function
-        super().__init__(images[0], coords, (0, 0), window, 400, will_slide, screen)
-
-        self.handled = False
-
-        self.can_press = True # if in options and you don't want buttons behind the options to be pressed
-        self.can_press_timer = 0
-        self.timer_is_handled = True # False means its currently handling it
-
-    def player_input(self):
-        if self.can_press and self.rect.collidepoint(pygame.mouse.get_pos()):
-            if not pygame.mouse.get_pressed()[0]:
-                self.handled = False
-            if pygame.mouse.get_pressed()[0] and not self.handled:
-                self.function()
-                self.handled = True
-            else:
-                self.image = self.images[1]
-        else:
-            self.image = self.images[0]
-
-    def set_pressable(self):
-        if (not self.can_press and self.timer_is_handled):
-            self.can_press_timer = 0.0001
-            self.timer_is_handled = False
-
-    def set_unpressable(self):
-        self.can_press = False
+        ButtonConfig.__init__(self, images, coords, function, window)
+        Slide.__init__(self, images[0], coords, (0, 0), window, 400, will_slide, screen)
 
     def update(self):
-        super().update()
-        #print(self.rect.x, self.coords[0])
-        self.player_input()
-        #print(self.can_press_timer)
-        if (self.can_press_timer != 0):
-            self.can_press_timer += 0.1
-        if (self.can_press_timer > 2):
-            self.can_press = True
-            self.timer_is_handled = True
-            self.can_press_timer = 0
+        Slide.update(self)
+        ButtonConfig.update(self)
 
-class TextButton(Slide):
+class TextButton(ButtonConfig, Slide):
     # https://www.clickminded.com/button-generator/
     '''Button Creation
     Images list should have at least two images, one for hover and one for default
@@ -282,33 +246,15 @@ class TextButton(Slide):
         # default dimensions, cannot change now
         self.width = 200
         self.height = 50
-        image = pygame.image.load("Button/button.png").convert_alpha()
-        super().__init__(image, coords, (self.width, self.height), window, 200, will_slide, screen)
+        image1 = pygame.image.load("Button/button.png").convert_alpha()
+        image2 = pygame.image.load("Button/button_hovering.png").convert_alpha()
+        ButtonConfig.__init__(self, [image1, image2], coords, function, window)
+        Slide.__init__(self, image1, coords, (self.width, self.height), window, 200, will_slide, screen)
 
         if will_slide:
             self.textRect = self.text.get_rect(center = (window.window.get_size()[0] + 200, coords[1]))
         else:
             self.textRect = self.text.get_rect(center = coords)
-
-        self.function = function
-
-        self.handled = False
-
-        self.can_press = True
-        self.can_press_timer = 0
-        self.timer_is_handled = True
-
-    def player_input(self):
-        if self.can_press and self.rect.collidepoint(pygame.mouse.get_pos()):
-            if not pygame.mouse.get_pressed()[0]:
-                self.handled = False
-            if pygame.mouse.get_pressed()[0] and not self.handled:
-                self.function()
-                self.handled = True
-            else:
-                self.image = pygame.image.load("Button/button_hovering.png").convert_alpha()
-        else:
-            self.image = pygame.image.load("Button/button.png").convert_alpha()
 
     def slide(self):
         if ((self.screen != self.window.screen) or self.rect.x + self.width/2 > self.coords[0]):
@@ -318,29 +264,13 @@ class TextButton(Slide):
 
     def change_func(self, function):
         self.function = function
-    
-    def set_pressable(self):
-        if (not self.can_press and self.timer_is_handled):
-            self.can_press_timer = 0.0001
-            self.timer_is_handled = False
-
-    def set_unpressable(self):
-        self.can_press = False
 
     def update(self):
-        super().update()
+        ButtonConfig.update(self)
+        Slide.update(self)
         if self.will_slide:
             super().slide()
         self.window.window.blit(self.text, self.textRect)
-        #print(self.rect.x, self.coords[0])
-
-        self.player_input()
-        if (self.can_press_timer != 0):
-            self.can_press_timer += 0.1
-        if (self.can_press_timer > 2):
-            self.can_press = True
-            self.timer_is_handled = True
-            self.can_press_timer = 0
 
 # TODO : Fixed scuffed position for scrollbar when scrolling thru the first two elements using arrow keys
 class ScrollBar():
@@ -492,14 +422,14 @@ class ScrollBar():
                     self.scroll_group.empty()
                     self.scroll_group.add(self.scroll_button)
                     self.scroll_group.add(self.selected)
-                    self.scroll_button.set_unpressable()
-                    self.selected.set_unpressable
+                    self.scroll_button.set_pressable()
+                    self.selected.set_pressable()
     
     # If its in options, advanced tools, etc where a window would pop up, the button shouldn't be pressed
     def check_overlap(self):
         if (self.window.screen == Screen.NONE and self.screen != Screen.NONE):
             self.scroll_button.set_unpressable()
-            self.selected.set_unpressable
+            self.selected.set_unpressable()
         else:
             self.scroll_button.set_pressable()
             self.selected.set_pressable()
@@ -604,7 +534,6 @@ class ScrollButton(pygame.sprite.Sprite):
             self.can_press_timer = 0
     
 class Background(Slide):
-    # TODO: Make background slide
     '''Creates a background (also used as an array element)
        @color = the color that the background will be in
        @coords = the coordinates where the rectangle will be centered at

@@ -42,7 +42,7 @@ class MainMenuActions():
         screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Graphs", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0] / 2), GRAPH_Y), pressed_graph, window, slide_in))
         
         # Options
-        OptionActions.display_options_button(window, screen_group, options_screen_group)
+        OptionActions.display_options_button(window, screen_group, options_screen_group, slide_in)
     
     # Input code, specifically here for button presses
     def pressed_sorting(window):
@@ -52,14 +52,14 @@ class MainMenuActions():
 
 class OptionActions():
 
-    def display_options_button(window, screen_group, options_screen_group):
+    def display_options_button(window, screen_group, options_screen_group, slide_in):
         options_button_1 = pygame.image.load('Button/OptionButtons/options.png').convert_alpha()
         options_button_1 = pygame.transform.rotozoom(options_button_1, 0, 0.1)
         options_button_2 = pygame.image.load('Button/OptionButtons/options_hover.png').convert_alpha()
         options_button_2 = pygame.transform.rotozoom(options_button_2, 0, 0.1)
         display_options = Wrapper.add_args_to_func(OptionActions.display_options, window, options_screen_group)
         # TODO: Crop image properly using Figma
-        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, window, True))
+        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, window, slide_in))
     
     # Input (specifically buttons)
 
@@ -208,7 +208,7 @@ class SortingActions():
     def on_reset(self):
         self.window.event.set()
 
-    def display_sorting(self, screen_group, options_screen_group):
+    def display_sorting(self, screen_group, options_screen_group, slide_in = True):
         self.scroll_bar = []
         if (self.window.screen == Wrapper.Screen.SORTING_SCREEN and (not self.window.screen_change and not self.window.window_size_change)):
             return
@@ -274,7 +274,7 @@ class SortingActions():
         self.scroll_bar.append(Wrapper.ScrollBar(resets, ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), (200, 50), self.scroll_group[0], self.window, "Reset", 124.9))
         self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted"))
         # Options button
-        OptionActions.display_options_button(self.window, screen_group, options_screen_group)
+        OptionActions.display_options_button(self.window, screen_group, options_screen_group, slide_in)
         return self.scroll_bar
 
     def toggle_aux_array(self):
