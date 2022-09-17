@@ -68,7 +68,7 @@ class OptionActions():
         options_group.empty()
         # TODO: Fix glitch where when you press the return button, it will simultaneously press the button behind it
         time.sleep(0.30)
-        window.options_screen = False
+        window.display = False
 
     '''@args[0] = options_group
        @args[1] = screen_group
@@ -78,7 +78,7 @@ class OptionActions():
         OptionActions.close_options(window, options_group)
         window.screen = Wrapper.Screen.MAIN_MENU
         window.screen_change = True
-        window.options_screen = False
+        window.display = False
 
     '''@args = options_group should be passed in first, then screen_group'''
     def display_options(window, options_group):
@@ -87,7 +87,7 @@ class OptionActions():
         OPTIONS_HEIGHT = 300
 
         # Switch on options
-        window.options_screen = True
+        window.display = True
         options_group.empty()
 
         # Draw everything
@@ -171,39 +171,40 @@ class SortingActions():
         # self.scroll_bar[1] = sort scroll
         # Glitch where it will click the button behind it
         #print(len(self.list))
-        if (self.window.options_screen and self.handled != 1):
-            #print("options extended")
-            self.scroll_bar[0].set_unpressable()
-            self.scroll_bar[1].set_unpressable()
-            self.toggle_aux.set_unpressable()
-            self.generate.set_unpressable()
-            self.advanced.set_unpressable()
-            self.handled = 1
-        elif (self.scroll_bar[0].extended and self.handled != 2):
-            #print("reset scroll extended")
+        if (self.scroll_bar != []):
+            if (self.window.display and self.handled != 1):
+                #print("options extended")
+                self.scroll_bar[0].set_unpressable()
+                self.scroll_bar[1].set_unpressable()
+                self.toggle_aux.set_unpressable()
+                self.generate.set_unpressable()
+                self.advanced.set_unpressable()
+                self.handled = 1
+            elif (self.scroll_bar[0].extended and self.handled != 2):
+                #print("reset scroll extended")
 
-            self.scroll_bar[1].set_unpressable()
-            self.toggle_aux.set_unpressable()
-            self.generate.set_unpressable()
-            self.advanced.set_unpressable()
-            self.handled = 2
-        elif (self.scroll_bar[1].extended and self.handled != 3):
-            #print("sorts scroll extended")
+                self.scroll_bar[1].set_unpressable()
+                self.toggle_aux.set_unpressable()
+                self.generate.set_unpressable()
+                self.advanced.set_unpressable()
+                self.handled = 2
+            elif (self.scroll_bar[1].extended and self.handled != 3):
+                #print("sorts scroll extended")
 
-            self.scroll_bar[0].set_unpressable()
-            self.toggle_aux.set_unpressable()
-            self.generate.set_unpressable()
-            self.advanced.set_unpressable()
-            self.handled = 3
-        elif (self.handled != 0):
-            #print("nothing extended")
+                self.scroll_bar[0].set_unpressable()
+                self.toggle_aux.set_unpressable()
+                self.generate.set_unpressable()
+                self.advanced.set_unpressable()
+                self.handled = 3
+            elif (self.handled != 0):
+                #print("nothing extended")
 
-            self.scroll_bar[0].set_pressable()
-            self.scroll_bar[1].set_pressable()
-            self.toggle_aux.set_pressable()
-            self.generate.set_pressable()
-            self.advanced.set_pressable()
-            self.handled = 0
+                self.scroll_bar[0].set_pressable()
+                self.scroll_bar[1].set_pressable()
+                self.toggle_aux.set_pressable()
+                self.generate.set_pressable()
+                self.advanced.set_pressable()
+                self.handled = 0
 
     def on_reset(self):
         self.window.event.set()
@@ -213,12 +214,21 @@ class SortingActions():
         if (self.window.screen == Wrapper.Screen.SORTING_SCREEN and (not self.window.screen_change and not self.window.window_size_change)):
             return
         # Change Screen
-        self.window.switch_screen(Wrapper.Screen.SORTING_SCREEN)
+        self.window.screen = Wrapper.Screen.SORTING_SCREEN
 
         # Drawing Everything
         screen_group.empty()
-        screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window))
-        screen_group.add(Wrapper.Background((self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, False))
+        self.scroll_group[0].empty()
+        self.scroll_group[1].empty()
+        self.SORTING_WIDTH = (3*self.window.window.get_size()[0]/4 - 2*self.MARGIN_X) # Ideally is ~800
+        self.SORTING_HEIGHT = (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)
+        self.SORTING_X = (3*self.window.window.get_size()[0]/4 - 2*self.MARGIN_X)/2 + self.MARGIN_X
+        self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
+        print(self.SORTING_X, self.SORTING_Y, self.SORTING_WIDTH, self.SORTING_HEIGHT)
+        self.array = Array(self.sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.MARGIN_X, self.SORTING_Y - self.SORTING_HEIGHT/2), 1, self.array_length, self.midi)
+
+        screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window, slide_in))
+        screen_group.add(Wrapper.Background((self.MARGIN_X + self.SORTING_WIDTH/2, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, False))
         
         def set_sorting_thread(thread):
             if self.sorting_thread is not None:
@@ -254,14 +264,14 @@ class SortingActions():
         button_col_top = 130 # Where the buttons start
         button_margin = 70
 
-        self.shuffle_button = Wrapper.TextButton(Wrapper.DefaultText.text("Shuffle", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top), Wrapper.sequential_functions(self.on_reset, self.array.shuffle), self.window)
+        self.shuffle_button = Wrapper.TextButton(Wrapper.DefaultText.text("Shuffle", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top), Wrapper.sequential_functions(self.on_reset, self.array.shuffle), self.window, slide_in)
         #self.reset_button = Wrapper.TextButton(Wrapper.DefaultText.text("Reset", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), Wrapper.sequential_functions(self.on_reset, self.array.reset), self.window)
         
         
-        self.toggle_aux = Wrapper.TextButton(Wrapper.DefaultText.text("Auxillary Array", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 3 * button_margin), Wrapper.sequential_functions(self.on_reset, self.toggle_aux_array), self.window)
-        self.generate = Wrapper.TextButton(Wrapper.DefaultText.text("Generate", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 4 * button_margin), Wrapper.sequential_functions(self.on_reset, self.array.generate), self.window)
-        self.advanced = Wrapper.TextButton(Wrapper.DefaultText.text("Advanced", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 5 * button_margin), Wrapper.sequential_functions(self.on_reset, self.show_advanced), self.window)
-        self.input = Wrapper.TextButton(Wrapper.DefaultText.text("Input", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 6 * button_margin), Wrapper.sequential_functions(self.on_reset, self.custom_array), self.window)
+        self.toggle_aux = Wrapper.TextButton(Wrapper.DefaultText.text("Auxillary Array", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 3 * button_margin), Wrapper.sequential_functions(self.on_reset, self.toggle_aux_array), self.window, slide_in)
+        self.generate = Wrapper.TextButton(Wrapper.DefaultText.text("Generate", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 4 * button_margin), Wrapper.sequential_functions(self.on_reset, self.array.generate), self.window, slide_in)
+        self.advanced = Wrapper.TextButton(Wrapper.DefaultText.text("Advanced", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 5 * button_margin), Wrapper.sequential_functions(self.on_reset, self.show_advanced), self.window, slide_in)
+        self.input = Wrapper.TextButton(Wrapper.DefaultText.text("Input", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 6 * button_margin), Wrapper.sequential_functions(self.on_reset, self.custom_array), self.window, slide_in)
         self.screen_group.add(self.shuffle_button)
         self.screen_group.add(self.toggle_aux)
         self.screen_group.add(self.generate)
@@ -271,6 +281,7 @@ class SortingActions():
         # scroll_group[0] = reset
         # scroll_group[1] = sorts
         # This scroll bar looks so shit cuz its off by a bit, make it better somehow
+        self.scroll_bar = []
         self.scroll_bar.append(Wrapper.ScrollBar(resets, ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), (200, 50), self.scroll_group[0], self.window, "Reset", slide_in, 124.9))
         self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted", slide_in))
         # Options button
@@ -292,7 +303,7 @@ class SortingActions():
         OPTIONS_HEIGHT = 300
 
         # Switch on options
-        self.window.options_screen = True
+        self.window.display = True
 
         # Where the text starts rendering
         text_start = self.window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
@@ -328,7 +339,7 @@ class SortingActions():
         self.text_box_group.empty()
         # TODO: Fix glitch where when you press the return button, it will simultaneously press the button behind it
         time.sleep(0.30)    
-        self.window.options_screen = False
+        self.window.display = False
 
     def custom_array(self):
         tkinter.Tk().withdraw() # prevents an empty tkinter window from appearing

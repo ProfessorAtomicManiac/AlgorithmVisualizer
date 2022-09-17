@@ -36,7 +36,7 @@ def main(fps):
             # If window changes size
             if event.type == pygame.VIDEORESIZE:
                 width, height = event.size
-                window = Wrapper.Window(width, height, window.screen, False, True)
+                window.change(width, height, window.screen, False, True)
             if event.type == pygame.QUIT:
                 window.event.set()
                 del midi
@@ -55,9 +55,9 @@ def main(fps):
             sorting_actions = UI.SortingActions(window, screen_group, sorting_group, aux_sorting_group, [scroll_group_1, scroll_group_2], options_screen_group, text_box_group, midi)
             scroll_bar = sorting_actions.display_sorting(screen_group, options_screen_group, True)
             window.screen_change = False
-        # TODO: make screen size change work for sorting screen
+        # TODO: make objects on screen scale better when screen size changes
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.window_size_change):
-            #UI.SortingActions.display_sorting(window, True, screen_group, options_screen_group)
+            scroll_bar = sorting_actions.display_sorting(screen_group, options_screen_group, False)
             window.window_size_change = False
 
         # This should update everything (Logic to update everything)
@@ -73,9 +73,10 @@ def main(fps):
 
             # find a way to just get rid of this logic for future
             extended = -1
-            for i in range(len(scroll_bar)):
-                if (scroll_bar[i].extended):
-                    extended = i
+            if (scroll_bar != None):
+                for i in range(len(scroll_bar)):
+                    if (scroll_bar[i].extended):
+                        extended = i
             scroll_group_1.draw(window.window)
             scroll_group_1.update()
             scroll_group_2.draw(window.window)

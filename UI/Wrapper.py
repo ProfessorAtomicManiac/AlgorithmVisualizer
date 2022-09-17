@@ -57,11 +57,12 @@ class Window():
         self.screen = screen
         self.background = pygame.Surface((width, height))
         self.background.fill(Colors.BACKGROUND_COLOR)
+        self.width = width
+        self.height = height
 
         self.screen_change = screen_change
-        self.options_screen = False
         self.window_size_change = window_size_change
-        self.mouse_button_down = False
+        self.display = False
         self.event = threading.Event()
 
     def update(self):
@@ -70,6 +71,17 @@ class Window():
     def switch_screen(self, screen):
         self.screen = screen
         self.screen_change = True
+
+    def change(self, width, height, screen, screen_change, window_size_change):
+        self.width = width
+        self.height = height
+        self.screen = screen
+        self.screen_change = screen_change
+        self.window_size_change = window_size_change
+
+        self.window.fill(Colors.BACKGROUND_COLOR)
+        self.background = pygame.Surface((width, height))
+        self.background.fill(Colors.BACKGROUND_COLOR)
 
 ''' Seperate class to make it so that you don't have 9 parameters when making text
         @text = the text to be displayed
@@ -404,6 +416,7 @@ class ScrollBar():
                 return
             if (self.coords[1] + (i + 1)*self.dim[1] - self.shift + self.tolerance < self.coords[1] + self.dim[1]):
                 continue
+            #print((self.coords[0], self.coords[1] + (i + 1)*self.dim[1] - self.shift))
             self.buttons[i].setCoords((self.coords[0], self.coords[1] + (i + 1)*self.dim[1] - self.shift))
             self.scroll_group.add(self.buttons[i])
         
@@ -471,6 +484,8 @@ class ScrollButton(pygame.sprite.Sprite):
         self.can_press = True
         self.can_press_timer = 0
         self.timer_is_handled = True
+
+        self.stop_slide = False
         
         if will_slide:
             self.rect = self.image.get_rect(center = (window.window.get_size()[0] + 400, self.coords[1]))
@@ -492,15 +507,21 @@ class ScrollButton(pygame.sprite.Sprite):
             self.kill()
 
     def slide(self):
-        print(self.coords[0], self.coords[1])
-        if ((self.screen != self.window.screen) or self.rect.x + self.dim[0]/2 > self.coords[0]):
-            self.accel += -1
-            self.rect.x += self.accel
-            self.textRect.x += self.accel
+        #print(self.coords[0], self.coords[1])
+        if (not self.stop_slide):
+            if ((self.screen != self.window.screen) or self.rect.x + self.dim[0]/2 > self.coords[0]):
+                self.accel += -1
+                self.rect.x += self.accel
+                self.textRect.x += self.accel
+            else:
+                self.accel = 0
+                self.rect = self.image.get_rect(center = self.coords)
+                self.textRect = self.text.get_rect(center = self.coords)
+                self.stop_slide = True
         else:
-            self.accel = 0
             self.rect = self.image.get_rect(center = self.coords)
             self.textRect = self.text.get_rect(center = self.coords)
+            self.window.window.blit(self.text, self.textRect)
 
     def copy(self):
         copy = ScrollButton(self.copy_text, self.function, self.window)
@@ -541,9 +562,7 @@ class ScrollButton(pygame.sprite.Sprite):
     def update(self):
         #self.window.window.blit(self.text, (self.rect.x + self.width/2, self.rect.y + self.height/2))
         self.image = pygame.Surface(self.dim)
-        #self.rect = self.image.get_rect(center = self.coords)
-        #self.textRect = self.text.get_rect(center = self.coords)
-        self.window.window.blit(self.text, self.textRect)
+        
         self.player_input()
 
         if (self.can_press_timer != 0):
@@ -555,9 +574,13 @@ class ScrollButton(pygame.sprite.Sprite):
 
         if self.will_slide:
             self.slide()
+        else:
+            self.rect = self.image.get_rect(center = self.coords)
+            self.textRect = self.text.get_rect(center = self.coords)
+            self.window.window.blit(self.text, self.textRect)
         self.destroy()
     
-class Background(Slide):
+class Background(pygame.sprite.Sprite):
     '''Creates a background (also used as an array element)
        @color = the color that the background will be in
        @coords = the coordinates where the rectangle will be centered at
@@ -565,18 +588,18 @@ class Background(Slide):
        @window = window class
     '''
     def __init__(self, coords, dim, color, window, will_slide = False, border_width = 0, screen = None, border_color = Colors.DEFAULT_BORDER_COLOR):
-        image = pygame.Surface(dim)
+        super().__init__()
+        self.image = pygame.Surface(dim)
         self.color = color
-        image.fill(color)
+        self.rect = self.image.get_rect(center = coords)
+        self.coords = coords
+        self.image.fill(color)
         self.border_width = border_width
         self.border_color = border_color
-
-        self.is_slide = False
-        super().__init__(image, coords, dim, window, will_slide, screen)
+        self.window = window
     
     def update(self):
-        super().update()
-        #self.rect = self.image.get_rect(center = self.coords)
+        self.rect = self.image.get_rect(center = self.coords)
         top_left = self.rect.topleft
         if (self.border_width != 0):
             pygame.draw.rect(self.window.window, self.border_color, [top_left[0], top_left[1], self.rect.width, self.border_width])
