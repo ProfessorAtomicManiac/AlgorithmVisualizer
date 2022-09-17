@@ -224,7 +224,7 @@ class SortingActions():
         self.SORTING_HEIGHT = (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)
         self.SORTING_X = (3*self.window.window.get_size()[0]/4 - 2*self.MARGIN_X)/2 + self.MARGIN_X
         self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
-        print(self.SORTING_X, self.SORTING_Y, self.SORTING_WIDTH, self.SORTING_HEIGHT)
+        #print(self.SORTING_X, self.SORTING_Y, self.SORTING_WIDTH, self.SORTING_HEIGHT)
         self.array = Array(self.sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.MARGIN_X, self.SORTING_Y - self.SORTING_HEIGHT/2), 1, self.array_length, self.midi)
 
         screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window, slide_in))

@@ -345,6 +345,7 @@ class ScrollBar():
         self.handled = -1
 
     def button_checks(self):
+        #print(self.selected.coords)
         # inefficient way of checking if buttons were pressed (TODO : Find faster way?)
         if (self.extended):
             for sprite in self.scroll_group.sprites():
@@ -355,6 +356,7 @@ class ScrollBar():
                     self.selected = sprite.copy()
                     #self.selected.setCoords(self.coords)
                     self.selected.setDim(self.dim)
+                    self.selected.setCoords(self.coords)
                     self.selected.is_chosen = True
                     time.sleep(0.3) # TODO : Fix bug to not click buttons behind it
                     self.toggle()
@@ -422,7 +424,6 @@ class ScrollBar():
         
         self.init_mouse_y = pygame.mouse.get_pos()[1]
 
-
     def toggle(self):
         if (not self.drag):
             self.extended = not self.extended
@@ -435,15 +436,6 @@ class ScrollBar():
                     self.scroll_group.add(self.selected)
                     self.scroll_button.set_pressable()
                     self.selected.set_pressable()
-    
-    # If its in options, advanced tools, etc where a window would pop up, the button shouldn't be pressed
-    def check_overlap(self):
-        if (self.window.screen == Screen.NONE and self.screen != Screen.NONE):
-            self.scroll_button.set_unpressable()
-            self.selected.set_unpressable()
-        else:
-            self.scroll_button.set_pressable()
-            self.selected.set_pressable()
 
     def set_pressable(self):
         self.scroll_button.set_pressable()
@@ -524,7 +516,7 @@ class ScrollButton(pygame.sprite.Sprite):
             self.window.window.blit(self.text, self.textRect)
 
     def copy(self):
-        copy = ScrollButton(self.copy_text, self.function, self.window)
+        copy = ScrollButton(self.copy_text, self.function, self.window, False, None)
         return copy
 
     def setDim(self, dim):
