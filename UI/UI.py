@@ -7,6 +7,9 @@ import pygame
 import UI.Wrapper as Wrapper
 from UI.Arrays import Array
 
+import tkinter
+from tkinter import filedialog
+
 ''' This should only have code concerning the UI duh
     Specifically the display of screens, and functions for input (button presses)
     Everything here should just to be to display stuff and inputs
@@ -114,7 +117,8 @@ class SortingActions():
         screen_group.empty()
         sorting_group.empty()
         aux_sorting_group.empty()
-        scroll_group.empty()
+        scroll_group[0].empty()
+        scroll_group[1].empty()
         options_group.empty()
         text_box_group.empty()
         # Constants
@@ -138,6 +142,9 @@ class SortingActions():
         self.scroll_group = scroll_group
         self.options_group = options_group
         self.text_box_group = text_box_group
+        self.scroll_bar = []
+
+        self.file = None
 
         self.SORTING_X = (window.window.get_size()[0] - self.CONFIG_WIDTH - 2*self.MARGIN_X)/2 + self.MARGIN_X
         self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
@@ -148,21 +155,52 @@ class SortingActions():
         self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), 1, self.array_length, midi)
         self.aux_array = None
 
+        self.handled = 0
+
+
     def update(self):
-        # TODO: add if options window is open too
-        if (self.scroll_bar.extended or self.window.options_screen):
+        # self.scroll_bar[0] = reset scroll
+        # self.scroll_bar[1] = sort scroll
+        # Glitch where it will click the button behind it
+        if (self.window.options_screen and self.handled != 1):
+            #print("options extended")
+            self.scroll_bar[0].set_unpressable()
+            self.scroll_bar[1].set_unpressable()
             self.toggle_aux.set_unpressable()
             self.generate.set_unpressable()
             self.advanced.set_unpressable()
-        else:
+            self.handled = 1
+        elif (self.scroll_bar[0].extended and self.handled != 2):
+            #print("reset scroll extended")
+
+            self.scroll_bar[1].set_unpressable()
+            self.toggle_aux.set_unpressable()
+            self.generate.set_unpressable()
+            self.advanced.set_unpressable()
+            self.handled = 2
+        elif (self.scroll_bar[1].extended and self.handled != 3):
+            #print("sorts scroll extended")
+
+            self.scroll_bar[0].set_unpressable()
+            self.toggle_aux.set_unpressable()
+            self.generate.set_unpressable()
+            self.advanced.set_unpressable()
+            self.handled = 3
+        elif (self.handled != 0):
+            #print("nothing extended")
+
+            self.scroll_bar[0].set_pressable()
+            self.scroll_bar[1].set_pressable()
             self.toggle_aux.set_pressable()
             self.generate.set_pressable()
             self.advanced.set_pressable()
+            self.handled = 0
 
     def on_reset(self):
         self.window.event.set()
 
     def display_sorting(self, screen_group, options_screen_group):
+        self.scroll_bar = []
         if (self.window.screen == Wrapper.Screen.SORTING_SCREEN and (not self.window.screen_change and not self.window.window_size_change)):
             return
         # Change Screen
@@ -186,8 +224,8 @@ class SortingActions():
 
         self.sorting_thread = None
 
-
         buttons = []
+        resets = []
         def bind_function(sort_input):
             def func():
                 sort_algo = Wrapper.sequential_functions(Wrapper.add_args_to_func(sort_input.sort, self.array, self.window.event, self.aux_array), sort_done)
@@ -199,23 +237,33 @@ class SortingActions():
         for sort_input in Sorting.sorting_algos:
             buttons.append(Wrapper.ScrollButton(Wrapper.DefaultText.text(sort_input.name, Wrapper.FontSizes.BUTTON_SIZE), bind_function(sort_input), self.window))
         
+        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Sorted", Wrapper.FontSizes.BUTTON_SIZE), self.array.reset, self.window))
+        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Reverse", Wrapper.FontSizes.BUTTON_SIZE), self.array.reset, self.window))
+        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Previous File", Wrapper.FontSizes.BUTTON_SIZE), self.array.reset, self.window))
+
         # Button Constants
         button_col_top = 130 # Where the buttons start
         button_margin = 70
 
         self.shuffle_button = Wrapper.TextButton(Wrapper.DefaultText.text("Shuffle", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top), Wrapper.sequential_functions(self.on_reset, self.array.shuffle), self.window)
-        self.reset_button = Wrapper.TextButton(Wrapper.DefaultText.text("Reset", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), Wrapper.sequential_functions(self.on_reset, self.array.reset), self.window)
+        #self.reset_button = Wrapper.TextButton(Wrapper.DefaultText.text("Reset", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), Wrapper.sequential_functions(self.on_reset, self.array.reset), self.window)
+        
+        
         self.toggle_aux = Wrapper.TextButton(Wrapper.DefaultText.text("Auxillary Array", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 3 * button_margin), Wrapper.sequential_functions(self.on_reset, self.toggle_aux_array), self.window)
         self.generate = Wrapper.TextButton(Wrapper.DefaultText.text("Generate", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 4 * button_margin), Wrapper.sequential_functions(self.on_reset, self.array.generate), self.window)
         self.advanced = Wrapper.TextButton(Wrapper.DefaultText.text("Advanced", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 5 * button_margin), Wrapper.sequential_functions(self.on_reset, self.show_advanced), self.window)
+        self.input = Wrapper.TextButton(Wrapper.DefaultText.text("Input", Wrapper.FontSizes.BUTTON_SIZE), ((5*self.window.window.get_size()[0]/6), button_col_top + 6 * button_margin), Wrapper.sequential_functions(self.on_reset, self.custom_array), self.window)
         self.screen_group.add(self.shuffle_button)
-        self.screen_group.add(self.reset_button)
         self.screen_group.add(self.toggle_aux)
         self.screen_group.add(self.generate)
         self.screen_group.add(self.advanced)
+        self.screen_group.add(self.input)
 
-        
-        self.scroll_bar = (Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group, self.window))
+        # scroll_group[0] = reset
+        # scroll_group[1] = sorts
+        # This scroll bar looks so shit cuz its off by a bit, make it better somehow
+        self.scroll_bar.append(Wrapper.ScrollBar(resets, ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), (200, 50), self.scroll_group[0], self.window, "Reset", 124.9))
+        self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted"))
         # Options button
         OptionActions.display_options_button(self.window, screen_group, options_screen_group)
         return self.scroll_bar
@@ -263,5 +311,14 @@ class SortingActions():
         self.options_group.empty()
         self.text_box_group.empty()
         # TODO: Fix glitch where when you press the return button, it will simultaneously press the button behind it
-        time.sleep(0.30)
+        time.sleep(0.30)    
         self.window.options_screen = False
+
+    def custom_array(self):
+        tkinter.Tk().withdraw() # prevents an empty tkinter window from appearing
+        self.file = filedialog.askopenfilename()
+        f = open(self.file, 'r')
+        array_config = list(map(int, f.readline().split()))
+        array = list(map(int, f.readline().split()))
+        self.array.change_array(array_config[1], array_config[2], array_config[0], array)
+        

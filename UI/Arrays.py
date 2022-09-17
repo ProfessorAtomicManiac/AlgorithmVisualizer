@@ -63,6 +63,7 @@ class ArrayElement(pygame.sprite.Sprite):
                 self.still_colored = False
                 self.color = "#ffffff"
                 self.timer = 0
+
             
 class Array():
     '''The actual array with ArrayElements as its elements
@@ -108,11 +109,21 @@ class Array():
         self.reset()
         return self.size
 
+    def change_array(self, beg, end, size, list = None):
+        try:
+            self.size = int(size)
+            self.beg = int(beg)
+            self.end = int(end)
+        except ValueError:
+            self.size = 256
+            self.beg = 1
+            self.end = 256
+        self.reset(list)
+
     def createList(self):
         width = self.dim[0]/len(self.list)
         y = self.coords[1] + self.dim[1]
         height_unit = self.dim[1] / (self.end - self.beg)
-
         for i in range(1, len(self.list)+1):
             height = (self.list[i-1] - self.beg) * height_unit
             x = self.coords[0] + (i-1) * width
@@ -194,19 +205,31 @@ class Array():
     def length(self):
         return len(self.list)
 
-    def reset(self):
+    def reset(self, list = None):
+        self.array_group.empty()
+
         self.list = []
+        if (list != None):
+            self.list = list
         self.visited = []
         cnt = 0
         while (cnt < self.size):
-            for i in range(self.beg, self.end+1):
-                self.list.append(i)
-                self.visited.append(False)
-                cnt += 1
-                if (cnt == self.size):
-                    break
+            if (list == None):
+                for i in range(self.beg, self.end+1):
+                    self.list.append(i)
+                    self.visited.append(False)
+                    cnt += 1
+                    if (cnt == self.size):
+                        break
+            # TODO: Unexpected behavior may occur if user puts in invalid array such as not having enough elements
+            else:
+                self.list = list
+                for i in range(0, len(self.list)):
+                    self.visited.append(False)
+                    cnt += 1
+                    if (cnt == self.size):
+                        break
 
-        self.array_group.empty()
         self.createList()
     '''
     def reverse(self):
