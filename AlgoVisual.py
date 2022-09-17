@@ -95,9 +95,9 @@ def main(fps):
             if (sorting_actions is not None):
                 sorting_actions.update()
 
-        if (window.options_screen):
-            options_screen_group.draw(window.window)
-            options_screen_group.update()
+        #if (window.options_screen):
+        options_screen_group.draw(window.window)
+        options_screen_group.update()
         text_box_group.draw(window.window)
         text_box_group.update(events_list)
         

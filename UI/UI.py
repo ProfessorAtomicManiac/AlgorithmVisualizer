@@ -38,8 +38,8 @@ class MainMenuActions():
         pressed_sorting = Wrapper.add_args_to_func(MainMenuActions.pressed_sorting, window)
         pressed_graph = Wrapper.add_args_to_func(MainMenuActions.pressed_graph, window)
         screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Algorithm Visualizer", Wrapper.FontSizes.TITLE_SIZE), (window.window.get_size()[0]/2, TITLE_Y), window, slide_in))
-        screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0]/2), SORTING_Y), pressed_sorting, window, slide_in))
-        screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Graphs", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0]/2), GRAPH_Y), pressed_graph, window, slide_in))
+        screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0] / 2), SORTING_Y), pressed_sorting, window, slide_in))
+        screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Graphs", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0] / 2), GRAPH_Y), pressed_graph, window, slide_in))
         
         # Options
         OptionActions.display_options_button(window, screen_group, options_screen_group)
@@ -59,7 +59,7 @@ class OptionActions():
         options_button_2 = pygame.transform.rotozoom(options_button_2, 0, 0.1)
         display_options = Wrapper.add_args_to_func(OptionActions.display_options, window, options_screen_group)
         # TODO: Crop image properly using Figma
-        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, window, False, Wrapper.Screen.NONE))
+        screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, window, True))
     
     # Input (specifically buttons)
 
@@ -91,7 +91,7 @@ class OptionActions():
         options_group.empty()
 
         # Draw everything
-        options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, 3, window))
+        options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, window, False, 3))
         
         # Where the text starts rendering
         text_start = window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
@@ -218,7 +218,7 @@ class SortingActions():
         # Drawing Everything
         screen_group.empty()
         screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window))
-        screen_group.add(Wrapper.Background((self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
+        screen_group.add(Wrapper.Background((self.SORTING_X, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, False))
         
         def set_sorting_thread(thread):
             if self.sorting_thread is not None:
@@ -299,7 +299,7 @@ class SortingActions():
 
         # Draw everything
         self.options_group.empty()
-        self.options_group.add(Wrapper.Background((self.window.window.get_size()[0]/2, self.window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, 3, self.window))
+        self.options_group.add(Wrapper.Background((self.window.window.get_size()[0]/2, self.window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, False, 3))
         
         # Exit button
         exit_1 = pygame.image.load('Button/remove.png').convert_alpha()
