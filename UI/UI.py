@@ -151,6 +151,9 @@ class SortingActions():
         self.sorting_group = sorting_group
         self.aux_sorting_group = aux_sorting_group
         sorting_group.empty()
+
+        self.array_config = [self.array_length, 1, self.array_length]
+        self.list = [i for i in range(1, self.array_length+1)]
         #print("{},{}  {},{}".format(self.SORTING_WIDTH, self.SORTING_HEIGHT, self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
         self.array = Array(sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2), 1, self.array_length, midi)
         self.aux_array = None
@@ -162,6 +165,7 @@ class SortingActions():
         # self.scroll_bar[0] = reset scroll
         # self.scroll_bar[1] = sort scroll
         # Glitch where it will click the button behind it
+        #print(len(self.list))
         if (self.window.options_screen and self.handled != 1):
             #print("options extended")
             self.scroll_bar[0].set_unpressable()
@@ -237,9 +241,9 @@ class SortingActions():
         for sort_input in Sorting.sorting_algos:
             buttons.append(Wrapper.ScrollButton(Wrapper.DefaultText.text(sort_input.name, Wrapper.FontSizes.BUTTON_SIZE), bind_function(sort_input), self.window))
         
-        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Sorted", Wrapper.FontSizes.BUTTON_SIZE), self.array.reset, self.window))
-        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Reverse", Wrapper.FontSizes.BUTTON_SIZE), self.array.reset, self.window))
-        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Previous File", Wrapper.FontSizes.BUTTON_SIZE), self.array.reset, self.window))
+        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Sorted", Wrapper.FontSizes.BUTTON_SIZE), Wrapper.sequential_functions(self.on_reset, self.array.reset), self.window))
+        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Reverse", Wrapper.FontSizes.BUTTON_SIZE), Wrapper.sequential_functions(self.on_reset, self.array.reverse), self.window))
+        resets.append(Wrapper.ScrollButton(Wrapper.DefaultText.text("Previous File", Wrapper.FontSizes.BUTTON_SIZE), Wrapper.sequential_functions(self.on_reset, self.array.load_config), self.window))
 
         # Button Constants
         button_col_top = 130 # Where the buttons start
@@ -318,7 +322,9 @@ class SortingActions():
         tkinter.Tk().withdraw() # prevents an empty tkinter window from appearing
         self.file = filedialog.askopenfilename()
         f = open(self.file, 'r')
-        array_config = list(map(int, f.readline().split()))
-        array = list(map(int, f.readline().split()))
-        self.array.change_array(array_config[1], array_config[2], array_config[0], array)
+        self.array_config.clear()
+        self.list.clear()
+        self.array_config = list(map(int, f.readline().split()))
+        self.list = list(map(int, f.readline().split()))
+        self.array.change_array(self.array_config[1], self.array_config[2], self.array_config[0], self.list)
         

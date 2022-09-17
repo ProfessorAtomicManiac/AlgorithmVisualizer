@@ -87,6 +87,9 @@ class Array():
         self.midi = midi
         self.size = size
         self.reset()
+
+        self.saved_config = [size, beg, end]
+        self.saved_list = [i for i in range(1, self.end+1)]
         
     def change_delay(self, delay):
         try:
@@ -109,7 +112,11 @@ class Array():
         self.reset()
         return self.size
 
-    def change_array(self, beg, end, size, list = None):
+    def save_config(self, config, arr):
+        self.saved_config = config
+        self.saved_list = arr
+
+    def change_array(self, beg, end, size, arr = None):
         try:
             self.size = int(size)
             self.beg = int(beg)
@@ -118,7 +125,24 @@ class Array():
             self.size = 256
             self.beg = 1
             self.end = 256
-        self.reset(list)
+        self.save_config([size, beg, end], arr)
+        self.reset(arr)
+
+    def load_config(self):
+        self.array_group.empty()
+
+        self.list = self.saved_list
+        self.visited = []
+        cnt = 0
+        #print(self.size, len(self.list))
+        while (cnt < self.size):
+            # TODO: Unexpected behavior may occur if user puts in invalid array such as not having enough elements or saved_list's size is 0
+            for i in range(0, len(self.list)):
+                self.visited.append(False)
+                cnt += 1
+                if (cnt == self.size):
+                    break
+        self.createList()
 
     def createList(self):
         width = self.dim[0]/len(self.list)
@@ -213,6 +237,7 @@ class Array():
             self.list = list
         self.visited = []
         cnt = 0
+        #print(self.size, len(self.list))
         while (cnt < self.size):
             if (list == None):
                 for i in range(self.beg, self.end+1):
@@ -229,18 +254,35 @@ class Array():
                     cnt += 1
                     if (cnt == self.size):
                         break
+        self.createList()
+    
+    def reverse(self, list = None):
+        self.array_group.empty()
+
+        self.list = []
+        if (list != None):
+            self.list = list
+        self.visited = []
+        cnt = 0
+        while (cnt < self.size):
+            if (list == None):
+                for i in range(self.end, self.beg - 1, -1):
+                    self.list.append(i)
+                    self.visited.append(False)
+                    cnt += 1
+                    if (cnt == self.size):
+                        break
+            # TODO: Unexpected behavior may occur if user puts in invalid array such as not having enough elements
+            else:
+                self.list = list
+                for i in range(0, len(self.list)):
+                    self.visited.append(False)
+                    cnt += 1
+                    if (cnt == self.size):
+                        break
 
         self.createList()
-    '''
-    def reverse(self):
-        self.list = []
-        self.visited = []
-        for i in range(1, self.size+1):
-            self.list.append(self.end - i + 1)
-            self.visited.append(False)
-        self.array_group.empty()
-        self.createList()
-    '''
+    
     def change(self, dim, coords):
         self.array_group.empty()
         self.dim = dim
