@@ -201,7 +201,7 @@ class Text(Slide):
     '''
     def __init__(self, text_arg, coords, window, will_slide = True, screen = None):
         image = text_arg.render()
-        super().__init__(image, coords, (0, 0), window, 800, will_slide, screen)
+        super().__init__(image, coords, (0, 0), window, 400, will_slide, screen)
 
 # TODO: There is a double where a click registers as a double click
 class Button(ButtonConfig, Slide):
@@ -249,10 +249,10 @@ class TextButton(ButtonConfig, Slide):
         image1 = pygame.image.load("Button/button.png").convert_alpha()
         image2 = pygame.image.load("Button/button_hovering.png").convert_alpha()
         ButtonConfig.__init__(self, [image1, image2], coords, function, window)
-        Slide.__init__(self, image1, coords, (self.width, self.height), window, 200, will_slide, screen)
+        Slide.__init__(self, image1, coords, (self.width, self.height), window, 400, will_slide, screen)
 
         if will_slide:
-            self.textRect = self.text.get_rect(center = (window.window.get_size()[0] + 200, coords[1]))
+            self.textRect = self.text.get_rect(center = (window.window.get_size()[0] + 400, coords[1]))
         else:
             self.textRect = self.text.get_rect(center = coords)
 
@@ -289,7 +289,7 @@ class ScrollBar():
         self.shift = how much the buttons should shift because of scroll
         
     '''
-    def __init__(self, buttons, coords, dim, scroll_group, window, default_text, max_height = 200):
+    def __init__(self, buttons, coords, dim, scroll_group, window, default_text, will_slide = False, max_height = 200):
         self.coords = coords
         self.dim = dim
         self.scroll_group = scroll_group
@@ -306,7 +306,7 @@ class ScrollBar():
         triangle_button_1 = pygame.transform.scale(triangle_button_1, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
         triangle_button_2 = pygame.image.load('Button/triangle_button_hovering.png').convert_alpha()
         triangle_button_2 = pygame.transform.scale(triangle_button_2, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
-        self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, window, True)
+        self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, window, will_slide)
         scroll_group.add(self.scroll_button)
 
         self.scroll_back = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + max_height/2), (TRIANGLE_BUTTON_WIDTH, max_height), Colors.BACKGROUND_SCROLL_COLOR, window, False)
@@ -314,9 +314,7 @@ class ScrollBar():
         self.scroll_bar_height = (max_height * max_height / (dim[1] * (len(buttons) - 1))) 
         self.scroll_bar = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2), (TRIANGLE_BUTTON_WIDTH, self.scroll_bar_height), Colors.SCROLLBAR_COLOR, window, False)
 
-        self.selected = ScrollButton(DefaultText.text(default_text, FontSizes.BUTTON_SIZE), None, window)
-        self.selected.setCoords(coords)
-        self.selected.setDim(dim)
+        self.selected = ScrollButton(DefaultText.text(default_text, FontSizes.BUTTON_SIZE), None, window, will_slide, None, coords, dim)
         for button in buttons:
             button.setDim(dim)
         scroll_group.add(self.selected)
@@ -343,7 +341,7 @@ class ScrollBar():
                     self.selected.kill()
                     sprite.is_chosen = False
                     self.selected = sprite.copy()
-                    self.selected.setCoords(self.coords)
+                    #self.selected.setCoords(self.coords)
                     self.selected.setDim(self.dim)
                     self.selected.is_chosen = True
                     time.sleep(0.3) # TODO : Fix bug to not click buttons behind it
@@ -456,13 +454,13 @@ class ScrollButton(pygame.sprite.Sprite):
        @window = the Window class object
        @is_chosen - if the button is selected
     '''
-    def __init__(self, text_arg, function, window):
+    def __init__(self, text_arg, function, window, will_slide = False, screen = None, coords = (0, 0), dim = (0, 0)):
         super().__init__()
         self.text = text_arg.render()
         self.copy_text = text_arg # Used for duplicating purposes
-        self.dim = ()
-        self.coords = ()
-        self.image = pygame.Surface((0, 0))
+        self.dim = dim
+        self.coords = coords
+        self.image = pygame.Surface(dim)
         self.rect = self.image.get_rect()
         self.function = function
         self.screen = window.screen
@@ -473,6 +471,36 @@ class ScrollButton(pygame.sprite.Sprite):
         self.can_press = True
         self.can_press_timer = 0
         self.timer_is_handled = True
+        
+        if will_slide:
+            self.rect = self.image.get_rect(center = (window.window.get_size()[0] + 400, self.coords[1]))
+            self.textRect = self.text.get_rect(center = (window.window.get_size()[0] + 400, self.coords[1]))
+        else:
+            self.rect = self.image.get_rect(center = self.coords)
+            self.textRect = self.text.get_rect(center = coords)
+        # Will automatically set screen to whatever screen it is currently on
+        if screen == None:
+            self.screen = window.screen
+        else:
+            self.screen = screen
+
+        self.accel = 0
+        self.will_slide = will_slide
+
+    def destroy(self):
+        if (self.rect.x <= -200):
+            self.kill()
+
+    def slide(self):
+        print(self.coords[0], self.coords[1])
+        if ((self.screen != self.window.screen) or self.rect.x + self.dim[0]/2 > self.coords[0]):
+            self.accel += -1
+            self.rect.x += self.accel
+            self.textRect.x += self.accel
+        else:
+            self.accel = 0
+            self.rect = self.image.get_rect(center = self.coords)
+            self.textRect = self.text.get_rect(center = self.coords)
 
     def copy(self):
         copy = ScrollButton(self.copy_text, self.function, self.window)
@@ -499,13 +527,6 @@ class ScrollButton(pygame.sprite.Sprite):
         else:
             self.image.fill("#415A77")
 
-    # If its in options, advanced tools, etc where a window would pop up, the button shouldn't be pressed
-    def check_overlap(self):
-        if (self.window.screen == Screen.NONE and self.screen != Screen.NONE):
-            self.set_unpressable()
-        else:
-            self.set_pressable()
-
     def set_pressable(self):
         if (not self.can_press and self.timer_is_handled):
             self.can_press_timer = 0.0001
@@ -520,10 +541,9 @@ class ScrollButton(pygame.sprite.Sprite):
     def update(self):
         #self.window.window.blit(self.text, (self.rect.x + self.width/2, self.rect.y + self.height/2))
         self.image = pygame.Surface(self.dim)
-        self.rect = self.image.get_rect(center = self.coords)
-        self.textRect = self.text.get_rect(center = self.coords)
+        #self.rect = self.image.get_rect(center = self.coords)
+        #self.textRect = self.text.get_rect(center = self.coords)
         self.window.window.blit(self.text, self.textRect)
-        self.check_overlap()
         self.player_input()
 
         if (self.can_press_timer != 0):
@@ -532,6 +552,10 @@ class ScrollButton(pygame.sprite.Sprite):
             self.can_press = True
             self.timer_is_handled = True
             self.can_press_timer = 0
+
+        if self.will_slide:
+            self.slide()
+        self.destroy()
     
 class Background(Slide):
     '''Creates a background (also used as an array element)

@@ -53,7 +53,7 @@ def main(fps):
             window.screen_change = False
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.screen_change):
             sorting_actions = UI.SortingActions(window, screen_group, sorting_group, aux_sorting_group, [scroll_group_1, scroll_group_2], options_screen_group, text_box_group, midi)
-            scroll_bar = sorting_actions.display_sorting(screen_group, options_screen_group)
+            scroll_bar = sorting_actions.display_sorting(screen_group, options_screen_group, True)
             window.screen_change = False
         # TODO: make screen size change work for sorting screen
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.window_size_change):

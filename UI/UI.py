@@ -271,8 +271,8 @@ class SortingActions():
         # scroll_group[0] = reset
         # scroll_group[1] = sorts
         # This scroll bar looks so shit cuz its off by a bit, make it better somehow
-        self.scroll_bar.append(Wrapper.ScrollBar(resets, ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), (200, 50), self.scroll_group[0], self.window, "Reset", 124.9))
-        self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted"))
+        self.scroll_bar.append(Wrapper.ScrollBar(resets, ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), (200, 50), self.scroll_group[0], self.window, "Reset", slide_in, 124.9))
+        self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted", slide_in))
         # Options button
         OptionActions.display_options_button(self.window, screen_group, options_screen_group, slide_in)
         return self.scroll_bar
