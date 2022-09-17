@@ -61,28 +61,6 @@ class OptionActions():
         # TODO: Crop image properly using Figma
         screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, window, False, Wrapper.Screen.NONE))
     
-    '''@args = options_group should be passed in first, then screen_group'''
-    def display_options(window, options_group):
-        # Constants
-        OPTIONS_WIDTH = 300
-        OPTIONS_HEIGHT = 300
-
-        # Switch on options
-        window.options_screen = True
-        options_group.empty()
-
-        # Draw everything
-        options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
-        
-        # Where the text starts rendering
-        text_start = window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
-
-        options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Options", Wrapper.FontSizes.TITLE_SIZE), (window.window.get_size()[0]/2, text_start), window, False, Wrapper.Screen.NONE))
-        close_options = Wrapper.add_args_to_func(OptionActions.close_options, window, options_group)
-        press_main_menu = Wrapper.add_args_to_func(OptionActions.press_main_menu, window, options_group)
-        options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Return", Wrapper.FontSizes.BUTTON_SIZE), (window.window.get_size()[0]/2, text_start + 100), close_options, window, False, Wrapper.Screen.NONE))
-        options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Main Menu", Wrapper.FontSizes.BUTTON_SIZE), (window.window.get_size()[0]/2, text_start + 175), press_main_menu, window, False, Wrapper.Screen.NONE))
-    
     # Input (specifically buttons)
 
     '''@args = options_group'''
@@ -102,6 +80,33 @@ class OptionActions():
         window.screen_change = True
         window.options_screen = False
 
+    '''@args = options_group should be passed in first, then screen_group'''
+    def display_options(window, options_group):
+        # Constants
+        OPTIONS_WIDTH = 300
+        OPTIONS_HEIGHT = 300
+
+        # Switch on options
+        window.options_screen = True
+        options_group.empty()
+
+        # Draw everything
+        options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, 3, window))
+        
+        # Where the text starts rendering
+        text_start = window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
+
+        exit_1 = pygame.image.load('Button/remove.png').convert_alpha()
+        exit_1 = pygame.transform.rotozoom(exit_1, 0, 0.05)
+        exit_2 = pygame.image.load('Button/remove_hover.png').convert_alpha()
+        exit_2 = pygame.transform.rotozoom(exit_2, 0, 0.05)
+        close_options = Wrapper.add_args_to_func(OptionActions.close_options, window, options_group)
+        press_main_menu = Wrapper.add_args_to_func(OptionActions.press_main_menu, window, options_group)
+        options_group.add(Wrapper.Button((exit_1, exit_2), (window.window.get_size()[0]/2 + OPTIONS_WIDTH/2 - 25, text_start - 25), close_options, window, False, Wrapper.Screen.NONE))
+
+        options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Options", Wrapper.FontSizes.TITLE_SIZE), (window.window.get_size()[0]/2, text_start), window, False, Wrapper.Screen.NONE))
+        options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Main Menu", Wrapper.FontSizes.BUTTON_SIZE), (window.window.get_size()[0]/2, text_start + 75), press_main_menu, window, False, Wrapper.Screen.NONE))
+    
 '''TODO: These classes are inconsistent with being entirely static and being an instance based class. Make it consistent
 so initalization is consistent'''
 class SortingActions():
@@ -284,24 +289,31 @@ class SortingActions():
     def show_advanced(self):
         # Constants
         OPTIONS_WIDTH = 300
-        OPTIONS_HEIGHT = 400
+        OPTIONS_HEIGHT = 300
 
         # Switch on options
         self.window.options_screen = True
 
-        # Draw everything
-        self.options_group.empty()
-        self.options_group.add(Wrapper.Background((self.window.window.get_size()[0]/2, self.window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR))
-        
         # Where the text starts rendering
         text_start = self.window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
+
+        # Draw everything
+        self.options_group.empty()
+        self.options_group.add(Wrapper.Background((self.window.window.get_size()[0]/2, self.window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, 3, self.window))
         
+        # Exit button
+        exit_1 = pygame.image.load('Button/remove.png').convert_alpha()
+        exit_1 = pygame.transform.rotozoom(exit_1, 0, 0.05)
+        exit_2 = pygame.image.load('Button/remove_hover.png').convert_alpha()
+        exit_2 = pygame.transform.rotozoom(exit_2, 0, 0.05)
+        self.options_group.add(Wrapper.Button((exit_1, exit_2), (self.window.window.get_size()[0]/2 + OPTIONS_WIDTH/2 - 25, text_start - 25), self.close_window, self.window, False, Wrapper.Screen.NONE))
+
         self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Time Delay", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start), self.window, False, Wrapper.Screen.NONE))
         self.delay_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.delay), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 50), (200, 50), lambda a : self.array.change_delay(a), self.window, " secs", 1)
         
         self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Array Size", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 100), self.window, False, Wrapper.Screen.NONE))
         self.size_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.size), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 150), (200, 50), lambda a : self.array.change_size(a), self.window, "", 1)
-        self.options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Return", Wrapper.FontSizes.BUTTON_SIZE), (self.window.window.get_size()[0]/2, text_start + 210), self.close_window, self.window, False, Wrapper.Screen.NONE))
+                
         self.text_box_group.add(self.delay_textbox)
         self.text_box_group.add(self.size_textbox)
         
@@ -321,6 +333,8 @@ class SortingActions():
     def custom_array(self):
         tkinter.Tk().withdraw() # prevents an empty tkinter window from appearing
         self.file = filedialog.askopenfilename()
+        if (self.file == ''):
+            return
         f = open(self.file, 'r')
         self.array_config.clear()
         self.list.clear()

@@ -35,6 +35,7 @@ class Colors():
     TEXT_COLOR = "#E0E1DD"
     BACKGROUND_SCROLL_COLOR = BUTTON_COLOR
     SCROLLBAR_COLOR = TEXT_COLOR
+    DEFAULT_BORDER_COLOR = TEXT_COLOR
 
 class FontSizes():
     BUTTON_SIZE = 25
@@ -613,17 +614,27 @@ class Background(pygame.sprite.Sprite):
        @color = the color that the background will be in
        @coords = the coordinates where the rectangle will be centered at
        @dim = the dimensions of the rectangle
+       @window = window class
     '''
-    def __init__(self, coords, dim, color):
+    def __init__(self, coords, dim, color, border_width = 0, window = None, border_color = Colors.DEFAULT_BORDER_COLOR):
         super().__init__()
         self.image = pygame.Surface(dim)
         self.color = color
         self.rect = self.image.get_rect(center = coords)
         self.coords = coords
         self.image.fill(color)
+        self.border_width = border_width
+        self.border_color = border_color
+        self.window = window
     
     def update(self):
         self.rect = self.image.get_rect(center = self.coords)
+        top_left = self.rect.topleft
+        if (self.border_width != 0):
+            pygame.draw.rect(self.window.window, self.border_color, [top_left[0], top_left[1], self.rect.width, self.border_width])
+            pygame.draw.rect(self.window.window, self.border_color, [top_left[0], top_left[1] + self.rect.height, self.rect.width, self.border_width])
+            pygame.draw.rect(self.window.window, self.border_color, [top_left[0], top_left[1], self.border_width, self.rect.height])
+            pygame.draw.rect(self.window.window, self.border_color, [top_left[0] + self.rect.width, top_left[1], self.border_width, self.rect.height + self.border_width])
 
     def change_color(self, color):
         self.color = color
