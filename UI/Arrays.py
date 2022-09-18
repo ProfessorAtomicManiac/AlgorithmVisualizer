@@ -185,7 +185,6 @@ class Array():
     def play(self, index):
         self.midi.play(int((self.list[index] - self.beg + 1)/(self.end - self.beg + 1)*127))
 
-
     def get(self, index):
         self.visited[index] = True
         self.play(index)

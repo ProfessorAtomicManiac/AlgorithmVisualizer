@@ -257,8 +257,8 @@ class TextButton(ButtonConfig, Slide):
         # default dimensions, cannot change now
         self.width = 200
         self.height = 50
-        image1 = pygame.image.load("Button/button.png").convert_alpha()
-        image2 = pygame.image.load("Button/button_hovering.png").convert_alpha()
+        image1 = pygame.image.load("Images/button.png").convert_alpha()
+        image2 = pygame.image.load("Images/button_hovering.png").convert_alpha()
         ButtonConfig.__init__(self, [image1, image2], coords, function, window)
         Slide.__init__(self, image1, coords, (self.width, self.height), window, 400, will_slide, screen)
 
@@ -313,17 +313,17 @@ class ScrollBar():
 
         TRIANGLE_BUTTON_WIDTH = 25
         self.TRIANGLE_BUTTON_HEIGHT = dim[1]
-        triangle_button_1 = pygame.image.load('Button/triangle_button.png').convert_alpha()
+        triangle_button_1 = pygame.image.load('Images/triangle_button.png').convert_alpha()
         triangle_button_1 = pygame.transform.scale(triangle_button_1, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
-        triangle_button_2 = pygame.image.load('Button/triangle_button_hovering.png').convert_alpha()
+        triangle_button_2 = pygame.image.load('Images/triangle_button_hovering.png').convert_alpha()
         triangle_button_2 = pygame.transform.scale(triangle_button_2, (TRIANGLE_BUTTON_WIDTH, self.TRIANGLE_BUTTON_HEIGHT))
         self.scroll_button = Button((triangle_button_1, triangle_button_2), (coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1]), self.toggle, window, will_slide)
         scroll_group.add(self.scroll_button)
 
-        self.scroll_back = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + max_height/2), (TRIANGLE_BUTTON_WIDTH, max_height), Colors.BACKGROUND_SCROLL_COLOR, window, False)
+        self.scroll_back = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + max_height/2), (TRIANGLE_BUTTON_WIDTH, max_height), Colors.BACKGROUND_SCROLL_COLOR, window, None, False)
         #print("Max Height", max_height)
         self.scroll_bar_height = (max_height * max_height / (dim[1] * (len(buttons) - 1))) 
-        self.scroll_bar = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2), (TRIANGLE_BUTTON_WIDTH, self.scroll_bar_height), Colors.SCROLLBAR_COLOR, window, False)
+        self.scroll_bar = Background((coords[0]+dim[0]/2 + TRIANGLE_BUTTON_WIDTH/2, coords[1] + self.TRIANGLE_BUTTON_HEIGHT/2 + self.scroll_bar_height/2), (TRIANGLE_BUTTON_WIDTH, self.scroll_bar_height), Colors.SCROLLBAR_COLOR, window, None, False)
 
         self.selected = ScrollButton(DefaultText.text(default_text, FontSizes.BUTTON_SIZE), None, window, will_slide, None, coords, dim)
         for button in buttons:
@@ -578,13 +578,17 @@ class Background(pygame.sprite.Sprite):
        @dim = the dimensions of the rectangle
        @window = window class
     '''
-    def __init__(self, coords, dim, color, window, will_slide = False, border_width = 0, screen = None, border_color = Colors.DEFAULT_BORDER_COLOR):
+    def __init__(self, coords, dim, color, window, image = None, will_slide = False, border_width = 0, screen = None, border_color = Colors.DEFAULT_BORDER_COLOR):
         super().__init__()
-        self.image = pygame.Surface(dim)
+        if (image == None):
+            self.image = pygame.Surface(dim)
+        else:
+            self.image = image
         self.color = color
         self.rect = self.image.get_rect(center = coords)
         self.coords = coords
-        self.image.fill(color)
+        if (image == None):
+            self.image.fill(color)
         self.border_width = border_width
         self.border_color = border_color
         self.window = window
@@ -600,6 +604,9 @@ class Background(pygame.sprite.Sprite):
 
     def change_color(self, color):
         self.color = color
+
+    def change_image(self, image):
+        self.image = image
 
     def get_rect(self):
         return self.rect
@@ -714,9 +721,41 @@ class TextBox(pygame.sprite.Sprite):
     def do_func(self):
         self.set_text(str(self.func(self.text)))        
 
-class Slider(pygame.sprite.Sprite):
-    pass
+class Slider():
+    
+    def __init__(self, coords, length, function, window, screen_group, default_value):
+        super().__init__()
+        self.coords = coords
+        self.length = length
+        self.func = function
+        self.window = window
+        self.screen_group = screen_group
+        screen_group.add(Background(coords, (length, 5), Colors.BACKGROUND_SCROLL_COLOR, window))
+        self.slider = Background( (default_value * length + coords[0] - length / 2, coords[1]), (10, 20), Colors.SCROLLBAR_COLOR, window)
+        screen_group.add(self.slider)
+        self.drag = False
+        self.val = default_value
 
+    def update(self):
+        # Drags the scroll bar
+        if not pygame.mouse.get_pressed()[0]:
+            self.drag = False
+        elif self.slider.get_rect().collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0] and not self.drag:
+            self.drag = True
+        elif (self.drag):
+            if (pygame.mouse.get_pos()[0] >= self.coords[0] - self.length/2 and pygame.mouse.get_pos()[0] <= self.coords[0] + self.length/2):
+                self.slider.set_coords((pygame.mouse.get_pos()[0], self.coords[1]))
+            elif (pygame.mouse.get_pos()[0] < self.coords[0] - self.length / 2):
+                self.slider.set_coords((self.coords[0] - self.length / 2, self.coords[1]))
+            elif (pygame.mouse.get_pos()[0] > self.coords[0] + self.length / 2):
+                self.slider.set_coords((self.coords[0] + self.length / 2, self.coords[1]))
+            self.val = (self.slider.coords[0] - self.coords[0]) / self.length + 0.5
+
+    def do_func(self):
+        self.slider.set_coords(( self.func((self.slider.get_coords()[0] - self.coords[0] + self.length/2) / self.length) * self.length + self.coords[0] - self.length / 2, self.coords[1])) 
+        print((self.slider.get_coords()[0] - self.coords[0] + self.length/2) / self.length)
+
+            
 class Midi():
 
     C = 74
@@ -736,12 +775,13 @@ class Midi():
         '''
         # Constants
         self.brief = .5
-        self.MAX = 127
+        self.MAX_VOLUME = 127
         self.queue = Queue()
+        self.volume = 0.5
 
-    def play(self, note, volume = MAX, length = brief):
-        self.player.note_on(note, volume)
-        self.queue.put((note, volume))
+    def play(self, note):
+        self.player.note_on(note, int(self.volume * self.MAX_VOLUME))
+        self.queue.put((note, int(self.volume * self.MAX_VOLUME)))
 
     def update(self):
         while (not self.queue.empty()):
@@ -763,3 +803,15 @@ class Midi():
             self.player.set_instrument(instrument)
         #print(self.instrument)
         return self.instrument
+
+    def change_volume(self, volume):
+        try:
+            volume = float(volume)
+        except ValueError:
+            print("Invalid Input")
+        if (volume >= 0 and volume <= 1):
+            self.volume = volume
+        else:
+            self.volume = 0.5
+        print(self.volume)
+        return self.volume
