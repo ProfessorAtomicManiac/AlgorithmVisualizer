@@ -1,12 +1,10 @@
 # AlgorithmVisualizer
 Work in progress. Using pygame to do all the work (although I'm still pretty unfamiliar with python in general)<br>
 Hopefully when its done it will have the following features:<br>
--Visualize sorting algorithms and make it make cool sounds<br>
-&emsp;-Few O(n^2) algorithms - FINISHED<br> 
-&emsp;-Mergesort and Quicksort - FINISHED<br> 
-&emsp;-Heapsort - FINISHED<br> 
-&emsp;-Finish UI (adding file input for custom arrays, advanced options like time delay)<br>
-&emsp;-Counting Sort and other noncomparison O(n) sorts with auxillary array - FINISHED<br>
+Video Showcase: https://youtu.be/8AfptLWbQBQ <br>
+Currently finished with visualizing sorting algorithms<br>
+
+Still in progress (Probably suspended until next year: <br>
 -Visualize graph algorithms on a grid or a graph with nodes<br>
 &emsp;-DFS and BFS<br>
 &emsp;-Shortest paths/Minimum spanning Tree (Djistra's, Prim's, Kruskal's)<br>
