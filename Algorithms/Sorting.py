@@ -57,11 +57,13 @@ def quick_sort_method(arr, event, begin, end):
                 arr.swap(i, low)
                 low += 1
             if (event.is_set()):
-                return
+                return -1
 
         arr.swap(low, pivot)
-        quick_sort_method(arr, event, begin, low)
-        quick_sort_method(arr, event, low+1, end)
+        if (quick_sort_method(arr, event, begin, low) == -1):
+            return -1
+        if (quick_sort_method(arr, event, low+1, end) == -1):
+            return -1
 
 ''' Merge Sort - O(nlogn)
     The array will be split into two even parts (not exactly even if the array has an odd number of elements)
@@ -77,8 +79,10 @@ def merge_sort(arr, event, aux = None):
 def merge_sort_method(arr, event, begin, end):
     if (begin+1 < end):
         mid = begin + ((end-begin)+1)//2
-        merge_sort_method(arr, event, begin, mid)
-        merge_sort_method(arr, event, mid, end)
+        if (merge_sort_method(arr, event, begin, mid) == -1):
+            return -1
+        if (merge_sort_method(arr, event, mid, end) == -1):
+            return -1
         arrL = arr.list[begin:mid]
         arrR = arr.list[mid:end]
         i = j = 0
@@ -91,7 +95,7 @@ def merge_sort_method(arr, event, begin, end):
                 arr.replace(k, arrR[j])
                 j += 1
             if (event.is_set()):
-                return
+                return -1
             k += 1
 
         while i < len(arrL):
@@ -99,13 +103,13 @@ def merge_sort_method(arr, event, begin, end):
             i += 1
             k += 1
             if (event.is_set()):
-                return
+                return -1
         while j < len(arrR):
             arr.replace(k, arrR[j])
             j += 1
             k += 1
             if (event.is_set()):
-                return
+                return -1
 
 ''' Heap Sort (nlogn) - Also the implementation of the Priority Queue using the Heap Data Structure
     All elements of the array will be inserted into what is known as a "Heap".

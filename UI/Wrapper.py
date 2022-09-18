@@ -196,13 +196,12 @@ class ButtonConfig(pygame.sprite.Sprite):
 
     def update(self):
         self.player_input()
-        #print(self.can_press_timer)
-        if (self.can_press_timer != 0):
+        if (self.can_press_timer > 0):
             self.can_press_timer += 0.1
         if (self.can_press_timer > 2):
             self.can_press = True
             self.timer_is_handled = True
-            self.can_press_timer = 0
+            self.can_press_timer = -10
 
 class Text(Slide):
     ''' Creates text
@@ -727,11 +726,14 @@ class Midi():
     def __init__(self):
         port = pygame.midi.get_default_output_id()
         self.player = pygame.midi.Output(port, 0)
-        self.player.set_instrument(13) # Grand_piano
+        self.instrument = 13
+        self.player.set_instrument(self.instrument) # xylophone
 
+        '''
         self.notes = []
         for i in range(1, 128):
             self.notes.append(False)
+        '''
         # Constants
         self.brief = .5
         self.MAX = 127
@@ -742,6 +744,22 @@ class Midi():
         self.queue.put((note, volume))
 
     def update(self):
-        if (not self.queue.empty()):
-           pop = self.queue.get()
-           self.player.note_off(pop[0], pop[1])
+        while (not self.queue.empty()):
+            #print(self.queue.qsize())
+            pop = self.queue.get()
+            self.player.note_off(pop[0], pop[1])
+
+    def change_instrument(self, instrument):
+        #print("Bruh")
+        try:
+            instrument = int(instrument)
+        except ValueError:
+            print("Invalid Input")
+        if (instrument >= 0 and instrument <= self.MAX):
+            self.instrument = instrument
+            self.player.set_instrument(instrument)
+        else:
+            self.instrument = 13
+            self.player.set_instrument(instrument)
+        #print(self.instrument)
+        return self.instrument

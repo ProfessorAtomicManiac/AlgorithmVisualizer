@@ -171,7 +171,8 @@ class SortingActions():
         # self.scroll_bar[1] = sort scroll
         # Glitch where it will click the button behind it
         #print(len(self.list))
-        if (self.scroll_bar != []):
+        if (len(self.scroll_bar) == 2):
+            #print(self.scroll_bar[0].can_press)
             if (self.window.display and self.handled != 1):
                 #print("options extended")
                 self.scroll_bar[0].set_unpressable()
@@ -196,7 +197,7 @@ class SortingActions():
                 self.generate.set_unpressable()
                 self.advanced.set_unpressable()
                 self.handled = 3
-            elif (self.handled != 0):
+            elif (not self.window.display and not self.scroll_bar[0].extended and not self.scroll_bar[1].extended and self.handled != 0):
                 #print("nothing extended")
 
                 self.scroll_bar[0].set_pressable()
@@ -300,7 +301,7 @@ class SortingActions():
     def show_advanced(self):
         # Constants
         OPTIONS_WIDTH = 300
-        OPTIONS_HEIGHT = 300
+        OPTIONS_HEIGHT = 400
 
         # Switch on options
         self.window.display = True
@@ -325,8 +326,11 @@ class SortingActions():
         self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Array Size", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 100), self.window, False, Wrapper.Screen.NONE))
         self.size_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.size), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 150), (200, 50), lambda a : self.array.change_size(a), self.window, "", 1)
                 
+        self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Instrument", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 200), self.window, False, Wrapper.Screen.NONE))
+        self.instrument_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.midi.instrument), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 250), (200, 50), lambda a : self.midi.change_instrument(a), self.window, "", 1)
         self.text_box_group.add(self.delay_textbox)
         self.text_box_group.add(self.size_textbox)
+        self.text_box_group.add(self.instrument_textbox)
         
     # Input (specifically buttons)
 
@@ -334,6 +338,7 @@ class SortingActions():
     def close_window(self):
         self.delay_textbox.do_func()
         self.size_textbox.do_func()
+        self.instrument_textbox.do_func()
         self.array_length = self.array.size
         self.options_group.empty()
         self.text_box_group.empty()
