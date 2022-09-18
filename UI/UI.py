@@ -20,7 +20,7 @@ class MainMenuActions():
        args[0] = screen_group
        args[1] = options_group
     '''
-    def display_main_menu(window, slide_in, screen_group, options_screen_group):
+    def display_main_menu(window, slide_in, screen_group, options_screen_group, midi):
         # Constants
         TITLE_Y = 100
         SORTING_Y = 200
@@ -41,8 +41,8 @@ class MainMenuActions():
         screen_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Graphs", Wrapper.FontSizes.BUTTON_SIZE), ((window.window.get_size()[0] / 2), GRAPH_Y), pressed_graph, window, slide_in))
         
         # Options
-        OptionActions.display_options_button(window, screen_group, options_screen_group, slide_in)
-    
+        return OptionActions(window, screen_group, options_screen_group, midi, slide_in)
+        
     # Input code, specifically here for button presses
     def pressed_sorting(window):
         window.switch_screen(Wrapper.Screen.SORTING_SCREEN)
@@ -51,20 +51,24 @@ class MainMenuActions():
 
 class OptionActions():
 
-    def display_options_button(window, screen_group, options_screen_group, slide_in):
-        options_button_1 = pygame.image.load('Button/OptionButtons/options.png').convert_alpha()
+    def __init__(self, window, screen_group, options_screen_group, midi, slide_in):
+        options_button_1 = pygame.image.load('Images/OptionButtons/options.png').convert_alpha()
         options_button_1 = pygame.transform.rotozoom(options_button_1, 0, 0.1)
-        options_button_2 = pygame.image.load('Button/OptionButtons/options_hover.png').convert_alpha()
+        options_button_2 = pygame.image.load('Images/OptionButtons/options_hover.png').convert_alpha()
         options_button_2 = pygame.transform.rotozoom(options_button_2, 0, 0.1)
-        display_options = Wrapper.add_args_to_func(OptionActions.display_options, window, options_screen_group)
+        display_options = Wrapper.add_args_to_func(self.display_options, window, options_screen_group)
         # TODO: Crop image properly using Figma
         screen_group.add(Wrapper.Button((options_button_1, options_button_2), ((window.window.get_size()[0])-40, 40), display_options, window, slide_in))
+        self.slider = None
+        self.midi = midi
+        self.volume = None
     
     # Input (specifically buttons)
 
     '''@args = options_group'''
-    def close_options(window, options_group):
+    def close_options(self, window, options_group):
         options_group.empty()
+        self.slider.do_func()
         # TODO: Fix glitch where when you press the return button, it will simultaneously press the button behind it
         time.sleep(0.30)
         window.display = False
@@ -72,15 +76,15 @@ class OptionActions():
     '''@args[0] = options_group
        @args[1] = screen_group
     '''
-    def press_main_menu(window, options_group):
+    def press_main_menu(self, window, options_group):
         window.event.set()
-        OptionActions.close_options(window, options_group)
+        self.close_options(window, options_group)
         window.screen = Wrapper.Screen.MAIN_MENU
         window.screen_change = True
         window.display = False
 
     '''@args = options_group should be passed in first, then screen_group'''
-    def display_options(window, options_group):
+    def display_options(self, window, options_group):
         # Constants
         OPTIONS_WIDTH = 300
         OPTIONS_HEIGHT = 300
@@ -90,22 +94,43 @@ class OptionActions():
         options_group.empty()
 
         # Draw everything
-        options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, window, False, 3))
+        options_group.add(Wrapper.Background((window.window.get_size()[0]/2, window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, window, None, False, 3))
         
         # Where the text starts rendering
         text_start = window.window.get_size()[1]/2 - OPTIONS_HEIGHT/2 + 50
 
-        exit_1 = pygame.image.load('Button/remove.png').convert_alpha()
+        exit_1 = pygame.image.load('Images/remove.png').convert_alpha()
         exit_1 = pygame.transform.rotozoom(exit_1, 0, 0.05)
-        exit_2 = pygame.image.load('Button/remove_hover.png').convert_alpha()
+        exit_2 = pygame.image.load('Images/remove_hover.png').convert_alpha()
         exit_2 = pygame.transform.rotozoom(exit_2, 0, 0.05)
-        close_options = Wrapper.add_args_to_func(OptionActions.close_options, window, options_group)
-        press_main_menu = Wrapper.add_args_to_func(OptionActions.press_main_menu, window, options_group)
+        close_options = Wrapper.add_args_to_func(self.close_options, window, options_group)
+        press_main_menu = Wrapper.add_args_to_func(self.press_main_menu, window, options_group)
         options_group.add(Wrapper.Button((exit_1, exit_2), (window.window.get_size()[0]/2 + OPTIONS_WIDTH/2 - 25, text_start - 25), close_options, window, False, Wrapper.Screen.NONE))
 
+        self.low = pygame.image.load('Images/Volume/volume_low.png').convert_alpha()
+        self.low = pygame.transform.rotozoom(self.low, 0, 0.15)
+        self.medium = pygame.image.load('Images/Volume/volume_medium.png').convert_alpha()
+        self.medium = pygame.transform.rotozoom(self.medium, 0, 0.15)
+        self.high = pygame.image.load('Images/Volume/volume_max.png').convert_alpha()
+        self.high = pygame.transform.rotozoom(self.high, 0, 0.15)
+        self.volume = Wrapper.Background((window.window.get_size()[0]/2 - 105, text_start + 150), (0, 0), None, window, self.medium)
+        options_group.add(self.volume)
         options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Options", Wrapper.FontSizes.TITLE_SIZE), (window.window.get_size()[0]/2, text_start), window, False, Wrapper.Screen.NONE))
         options_group.add(Wrapper.TextButton(Wrapper.DefaultText.text("Main Menu", Wrapper.FontSizes.BUTTON_SIZE), (window.window.get_size()[0]/2, text_start + 75), press_main_menu, window, False, Wrapper.Screen.NONE))
-    
+        self.slider = Wrapper.Slider((window.window.get_size()[0]/2 + 25, text_start + 150), 200, lambda a : self.midi.change_volume(a), window, options_group, self.midi.volume)
+
+    def update(self):
+        if (self.slider != None):
+            self.slider.update()
+        
+        if (self.volume != None):
+            if (self.slider.val <= 0.333):
+                self.volume.change_image(self.low)
+            elif (self.slider.val > 0.333 and self.slider.val <= 0.6666):
+                self.volume.change_image(self.medium)
+            elif (self.slider.val > 0.6666):
+                self.volume.change_image(self.high)
+
 '''TODO: These classes are inconsistent with being entirely static and being an instance based class. Make it consistent
 so initalization is consistent'''
 class SortingActions():
@@ -170,7 +195,8 @@ class SortingActions():
         # self.scroll_bar[1] = sort scroll
         # Glitch where it will click the button behind it
         #print(len(self.list))
-        if (self.scroll_bar != []):
+        if (len(self.scroll_bar) == 2):
+            #print(self.scroll_bar[0].can_press)
             if (self.window.display and self.handled != 1):
                 #print("options extended")
                 self.scroll_bar[0].set_unpressable()
@@ -195,7 +221,7 @@ class SortingActions():
                 self.generate.set_unpressable()
                 self.advanced.set_unpressable()
                 self.handled = 3
-            elif (self.handled != 0):
+            elif (not self.window.display and not self.scroll_bar[0].extended and not self.scroll_bar[1].extended and self.handled != 0):
                 #print("nothing extended")
 
                 self.scroll_bar[0].set_pressable()
@@ -204,6 +230,9 @@ class SortingActions():
                 self.generate.set_pressable()
                 self.advanced.set_pressable()
                 self.handled = 0
+
+        if (self.options_actions != None):
+            self.options_actions.update()
 
     def on_reset(self):
         self.window.event.set()
@@ -239,7 +268,7 @@ class SortingActions():
         self.array = Array(self.sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.MARGIN_X, self.SORTING_Y - self.SORTING_HEIGHT/2), 1, self.array_length, self.midi)
 
         screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window, slide_in))
-        screen_group.add(Wrapper.Background((self.MARGIN_X + self.SORTING_WIDTH/2, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, False))
+        screen_group.add(Wrapper.Background((self.MARGIN_X + self.SORTING_WIDTH/2, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, None, False))
 
         self.sorting_thread = None
 
@@ -285,7 +314,9 @@ class SortingActions():
         self.scroll_bar.append(Wrapper.ScrollBar(resets, ((5*self.window.window.get_size()[0]/6), button_col_top + button_margin), (200, 50), self.scroll_group[0], self.window, "Reset", slide_in, 124.9))
         self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted", slide_in))
         # Options button
-        OptionActions.display_options_button(self.window, screen_group, options_screen_group, slide_in)
+
+        # TODO: RETURNS STUPID STUFF, reduce returns and make it so that you don't have to call update manually in main file
+        self.options_actions = OptionActions(self.window, screen_group, options_screen_group, self.midi, slide_in)
         return self.scroll_bar
 
     def toggle_aux_array(self):
@@ -300,7 +331,7 @@ class SortingActions():
     def show_advanced(self):
         # Constants
         OPTIONS_WIDTH = 300
-        OPTIONS_HEIGHT = 300
+        OPTIONS_HEIGHT = 400
 
         # Switch on options
         self.window.display = True
@@ -310,12 +341,12 @@ class SortingActions():
 
         # Draw everything
         self.options_group.empty()
-        self.options_group.add(Wrapper.Background((self.window.window.get_size()[0]/2, self.window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, False, 3))
+        self.options_group.add(Wrapper.Background((self.window.window.get_size()[0]/2, self.window.window.get_size()[1]/2), (OPTIONS_WIDTH, OPTIONS_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, None, False, 3))
         
         # Exit button
-        exit_1 = pygame.image.load('Button/remove.png').convert_alpha()
+        exit_1 = pygame.image.load('Images/remove.png').convert_alpha()
         exit_1 = pygame.transform.rotozoom(exit_1, 0, 0.05)
-        exit_2 = pygame.image.load('Button/remove_hover.png').convert_alpha()
+        exit_2 = pygame.image.load('Images/remove_hover.png').convert_alpha()
         exit_2 = pygame.transform.rotozoom(exit_2, 0, 0.05)
         self.options_group.add(Wrapper.Button((exit_1, exit_2), (self.window.window.get_size()[0]/2 + OPTIONS_WIDTH/2 - 25, text_start - 25), self.close_window, self.window, False, Wrapper.Screen.NONE))
 
@@ -325,8 +356,11 @@ class SortingActions():
         self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Array Size", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 100), self.window, False, Wrapper.Screen.NONE))
         self.size_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.size), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 150), (200, 50), lambda a : self.array.change_size(a), self.window, "", 1)
                 
+        self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Instrument", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 200), self.window, False, Wrapper.Screen.NONE))
+        self.instrument_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.midi.instrument), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 250), (200, 50), lambda a : self.midi.change_instrument(a), self.window, "", 1)
         self.text_box_group.add(self.delay_textbox)
         self.text_box_group.add(self.size_textbox)
+        self.text_box_group.add(self.instrument_textbox)
         
     # Input (specifically buttons)
 
@@ -334,6 +368,7 @@ class SortingActions():
     def close_window(self):
         self.delay_textbox.do_func()
         self.size_textbox.do_func()
+        self.instrument_textbox.do_func()
         self.array_length = self.array.size
         self.options_group.empty()
         self.text_box_group.empty()

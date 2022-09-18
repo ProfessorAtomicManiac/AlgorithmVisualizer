@@ -17,6 +17,7 @@ def main(fps):
     midi = Wrapper.Midi()
 
     screen_group = pygame.sprite.Group()
+    options_real_group = pygame.sprite.Group()
     options_screen_group = pygame.sprite.Group()
     sorting_group = pygame.sprite.Group()
     aux_sorting_group = pygame.sprite.Group()
@@ -27,7 +28,7 @@ def main(fps):
     scroll_bar = []
     sorting_actions = None
 
-    UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
+    UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group, midi)
 
     while True:
         # General Events should be placed here
@@ -46,10 +47,10 @@ def main(fps):
         # apparentally python has no switch cases?
         # This should only have logic for what to do when its on screen x or something like that
         if (window.screen == Wrapper.Screen.MAIN_MENU and window.window_size_change):
-            UI.MainMenuActions.display_main_menu(window, False, screen_group, options_screen_group)
+            options_real_group = UI.MainMenuActions.display_main_menu(window, False, screen_group, options_screen_group, midi)
             window.window_size_change = False
         elif (window.screen == Wrapper.Screen.MAIN_MENU and window.screen_change):
-            UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group)
+            options_real_group = UI.MainMenuActions.display_main_menu(window, True, screen_group, options_screen_group, midi)
             window.screen_change = False
         elif (window.screen == Wrapper.Screen.SORTING_SCREEN and window.screen_change):
             sorting_actions = UI.SortingActions(window, screen_group, sorting_group, aux_sorting_group, [scroll_group_1, scroll_group_2], options_screen_group, text_box_group, midi)
@@ -101,6 +102,7 @@ def main(fps):
         options_screen_group.update()
         text_box_group.draw(window.window)
         text_box_group.update(events_list)
+        options_real_group.update()
         
         # Must have to update
         pygame.display.update()
