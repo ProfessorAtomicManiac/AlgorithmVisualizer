@@ -4,7 +4,7 @@ Hopefully when its done it will have the following features:<br>
 Video Showcase: https://youtu.be/8AfptLWbQBQ <br>
 Currently finished with visualizing sorting algorithms<br>
 
-Still in progress (Probably suspended until next year: <br>
+Still in progress (Probably suspended until next year): <br>
 -Visualize graph algorithms on a grid or a graph with nodes<br>
 &emsp;-DFS and BFS<br>
 &emsp;-Shortest paths/Minimum spanning Tree (Djistra's, Prim's, Kruskal's)<br>
