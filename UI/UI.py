@@ -152,12 +152,15 @@ class SortingActions():
         text_box_group.empty()
         # Constants
         self.TITLE_Y = 50
+
+        # Text at the bottom of the screen
+        self.TITLE_HEIGHT = 100
         # Margins for all boxes
         self.MARGIN_X = 25
         self.MARGIN_Y = 10
         # Calculations for certain values
         self.SORTING_WIDTH = (window.window.get_size()[0] - 3*self.MARGIN_X)*(3/4) # Ideally is ~800
-        self.SORTING_HEIGHT = (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)
+        self.SORTING_HEIGHT = (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y - self.TITLE_HEIGHT)
         self.CONFIG_WIDTH = 300
         #CONFIG_X = SORTING_MARGIN_X
         #CONFIG_Y = SORTING_HEIGHT + 2*SORTING_MARGIN_Y
@@ -176,7 +179,7 @@ class SortingActions():
         self.file = None
 
         self.SORTING_X = (window.window.get_size()[0] - self.CONFIG_WIDTH - 2*self.MARGIN_X)/2 + self.MARGIN_X
-        self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
+        self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y - self.TITLE_HEIGHT)/2
         self.sorting_group = sorting_group
         self.aux_sorting_group = aux_sorting_group
         sorting_group.empty()
@@ -189,8 +192,25 @@ class SortingActions():
 
         self.handled = 0
 
+        self.accessed = None
+        self.changes = None
+        self.aux_count = None
+        self.swaps = None
 
     def update(self):
+        if (self.accessed != None):
+            #print("Accessed Array Count: {}".format(self.array.access))
+            self.accessed.change_text(Wrapper.DefaultText.text("Accessed Array Count: {}".format(self.array.access), Wrapper.FontSizes.BUTTON_SIZE))
+        if (self.changes != None):
+            self.changes.change_text(Wrapper.DefaultText.text("Changes: {}".format(self.array.changes), Wrapper.FontSizes.BUTTON_SIZE))
+        if (self.aux_count != None and self.aux_array != None):
+            self.aux_count.change_text(Wrapper.DefaultText.text("Accessed Auxillary Array Count: {}".format(self.aux_array.access), Wrapper.FontSizes.BUTTON_SIZE))
+        else:
+            self.aux_count.change_text(Wrapper.DefaultText.text("", Wrapper.FontSizes.BUTTON_SIZE))
+
+        if (self.swaps != None):
+            self.swaps.change_text(Wrapper.DefaultText.text("Swaps: {}".format(self.array.swaps), Wrapper.FontSizes.BUTTON_SIZE))
+            
         # self.scroll_bar[0] = reset scroll
         # self.scroll_bar[1] = sort scroll
         # Glitch where it will click the button behind it
@@ -261,9 +281,9 @@ class SortingActions():
         self.scroll_group[0].empty()
         self.scroll_group[1].empty()
         self.SORTING_WIDTH = (3*self.window.window.get_size()[0]/4 - 2*self.MARGIN_X) # Ideally is ~800
-        self.SORTING_HEIGHT = (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)
+        self.SORTING_HEIGHT = (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y - self.TITLE_HEIGHT)
         self.SORTING_X = (3*self.window.window.get_size()[0]/4 - 2*self.MARGIN_X)/2 + self.MARGIN_X
-        self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y)/2
+        self.SORTING_Y = 2*self.TITLE_Y + self.MARGIN_Y + (self.window.window.get_size()[1] - 2*self.TITLE_Y - 2*self.MARGIN_Y - self.TITLE_HEIGHT)/2
         #print(self.SORTING_X, self.SORTING_Y, self.SORTING_WIDTH, self.SORTING_HEIGHT)
         self.array = Array(self.sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.MARGIN_X, self.SORTING_Y - self.SORTING_HEIGHT/2), 1, self.array_length, self.midi)
 
@@ -315,15 +335,26 @@ class SortingActions():
         self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted", slide_in))
         # Options button
 
+        self.accessed = Wrapper.Text(Wrapper.DefaultText.text("Accessed Array Count: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 200, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/4), self.window, slide_in)
+        self.changes = Wrapper.Text(Wrapper.DefaultText.text("Swaps: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 600, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/4), self.window, slide_in)
+        self.aux_count = Wrapper.Text(Wrapper.DefaultText.text("", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 225, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/2 + self.MARGIN_Y), self.window, slide_in)
+        self.swaps = Wrapper.Text(Wrapper.DefaultText.text("Changes: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 600, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/2 + self.MARGIN_Y), self.window, slide_in)
+
+        self.screen_group.add(self.accessed)
+        self.screen_group.add(self.swaps)
+        self.screen_group.add(self.aux_count)
+        self.screen_group.add(self.changes)
         # TODO: RETURNS STUPID STUFF, reduce returns and make it so that you don't have to call update manually in main file
         self.options_actions = OptionActions(self.window, screen_group, options_screen_group, self.midi, slide_in)
         return self.scroll_bar
 
     def toggle_aux_array(self):
         if self.aux_array == None:
+            self.aux_count.change_text(Wrapper.DefaultText.text("Accessed Auxillary Array Count: ", Wrapper.FontSizes.BUTTON_SIZE))
             self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
             self.aux_array = Array(self.aux_sorting_group, (self.SORTING_WIDTH, self.SORTING_HEIGHT/2), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y), 1, self.array_length, self.midi)
         else:
+            self.aux_count.change_text(Wrapper.DefaultText.text("", Wrapper.FontSizes.BUTTON_SIZE))
             self.aux_array.kill()
             self.array.change((self.SORTING_WIDTH, self.SORTING_HEIGHT), (self.SORTING_X - self.SORTING_WIDTH/2, self.SORTING_Y - self.SORTING_HEIGHT/2))
             self.aux_array = None

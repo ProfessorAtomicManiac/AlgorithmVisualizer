@@ -90,6 +90,10 @@ class Array():
 
         self.saved_config = [size, beg, end]
         self.saved_list = [i for i in range(1, self.end+1)]
+
+        self.access = 0
+        self.swaps = 0
+        self.changes = 0
         
     def change_delay(self, delay):
         try:
@@ -145,6 +149,9 @@ class Array():
         self.createList()
 
     def createList(self):
+        self.access = 0
+        self.swaps = 0
+        self.changes = 0
         width = self.dim[0]/len(self.list)
         y = self.coords[1] + self.dim[1]
         height_unit = self.dim[1] / (self.end - self.beg)
@@ -172,6 +179,9 @@ class Array():
     # TODO: As part of the challenge, code ur own shuffle method
     def shuffle(self):
         random.shuffle(self.list)
+        self.access = 0
+        self.swaps = 0
+        self.changes = 0
 
     def generate(self):
         self.array_group.empty()
@@ -186,17 +196,21 @@ class Array():
         self.midi.play(int((self.list[index] - self.beg + 1)/(self.end - self.beg + 1)*127))
 
     def get(self, index):
+        self.access += 1
         self.visited[index] = True
         self.play(index)
         time.sleep(self.delay)
         return self.list[index]
 
     def replace(self, index, val):
+        self.access += 1
+        self.changes += 1
         self.visited[index] = True
         self.play(index)
         time.sleep(self.delay)
         self.list[index] = val
     
+    # No sorting algos actually use these, probably initialization
     def insert(self, index, val):
         self.list.insert(index, val)
         self.visited.insert(index, True)
@@ -214,6 +228,9 @@ class Array():
         self.createList()
 
     def swap(self, ind1, ind2):
+        self.access += 2
+        self.changes += 2
+        self.swaps += 1
         if (ind1 == ind2):
             return
         self.visited[ind1] = True

@@ -214,6 +214,9 @@ class Text(Slide):
         image = text_arg.render()
         super().__init__(image, coords, (0, 0), window, 400, will_slide, screen)
 
+    def change_text(self, text_arg):
+        self.image = text_arg.render()
+
 # TODO: There is a double where a click registers as a double click
 class Button(ButtonConfig, Slide):
     '''This is an icon button class

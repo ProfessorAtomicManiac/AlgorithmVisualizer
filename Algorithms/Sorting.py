@@ -259,7 +259,7 @@ def bucketSort(arr, event, digit, aux):
         aux.list = []
         for i in range(length):
             buckets.append([])
-        aux.setList(length, arr.length())
+        aux.setList(length, 0, arr.length())
 
         
         for i in range(arr.length()):
