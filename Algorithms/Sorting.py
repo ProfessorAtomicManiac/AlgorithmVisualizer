@@ -45,7 +45,8 @@ def insertion_sort(arr, event, aux = None):
 '''
 def quick_sort(arr, event, aux = None):
     quick_sort_method(arr, event, 0, arr.length())
-    finish(arr)
+    if not event.is_set():
+        finish(arr)
 
 def quick_sort_method(arr, event, begin, end):
     if (begin < end):
@@ -74,7 +75,8 @@ def quick_sort_method(arr, event, begin, end):
 '''
 def merge_sort(arr, event, aux = None):
     merge_sort_method(arr, event, 0, arr.length())
-    finish(arr)
+    if not event.is_set():
+        finish(arr)
 
 def merge_sort_method(arr, event, begin, end):
     if (begin+1 < end):
@@ -367,10 +369,10 @@ def counting_sort(arr, event, aux):
 '''
 def is_sorted(arr, event):
     for i in range(0, arr.length() - 1):
-        if (arr.get(i) > arr.get(i + 1)):
-            return -1
         if (event.is_set()):
             return 0
+        if (arr.get(i) > arr.get(i + 1)):
+            return -1
     return 1
 
 def shuffle(arr, event):
@@ -393,6 +395,15 @@ def bogo_sort(arr, event, aux = None):
     if (num == 1):
         finish(arr)
 
+def miracle_sort(arr, event, aux = None):
+    while True:
+        status = is_sorted(arr, event)
+        if status == 1:
+            finish(arr)
+            return
+        if status == 0:
+            return
+
 # Sorting Algorithm Input
 class SA:
     ''' name = how it will appear on the dropdown menu
@@ -403,4 +414,4 @@ class SA:
         self.sort = sort
 
 sorting_algos = [SA("Selection Sort", selection_sort), SA("Insertion Sort", insertion_sort), SA("Quick Sort", quick_sort), SA("Merge Sort", merge_sort), 
-SA("Heap Sort", heap_sort), SA("Radix Sort", radix_sort), SA("Counting Sort", counting_sort), SA("Bogo Sort", bogo_sort)]
+SA("Heap Sort", heap_sort), SA("Radix Sort", radix_sort), SA("Counting Sort", counting_sort), SA("Bogo Sort", bogo_sort), SA("Miracle Sort", miracle_sort)]

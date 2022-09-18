@@ -1,14 +1,13 @@
 import threading
 import time
+import tkinter
+from tkinter import filedialog
 
 import Algorithms.Sorting as Sorting
 import pygame
 
 import UI.Wrapper as Wrapper
 from UI.Arrays import Array
-
-import tkinter
-from tkinter import filedialog
 
 ''' This should only have code concerning the UI duh
     Specifically the display of screens, and functions for input (button presses)
@@ -237,6 +236,18 @@ class SortingActions():
 
     def on_reset(self):
         self.window.event.set()
+        self.set_sorting_thread(None)
+
+    def set_sorting_thread(self, thread):
+        if self.sorting_thread is not None:
+            self.window.event.set()
+            self.sorting_thread.join()
+        self.window.event.clear()
+        self.sorting_thread = thread
+
+    def sort_done(self):
+        self.sorting_thread = None
+        self.window.event.set()
 
     def display_sorting(self, screen_group, options_screen_group, slide_in = True):
         self.scroll_bar = []
@@ -258,17 +269,6 @@ class SortingActions():
 
         screen_group.add(Wrapper.Text(Wrapper.DefaultText.text("Sorting", Wrapper.FontSizes.TITLE_SIZE), (self.window.window.get_size()[0]/2, self.TITLE_Y), self.window, slide_in))
         screen_group.add(Wrapper.Background((self.MARGIN_X + self.SORTING_WIDTH/2, self.SORTING_Y), (self.SORTING_WIDTH, self.SORTING_HEIGHT), Wrapper.Colors.SMALL_BACKGROUND_COLOR, self.window, None, False))
-        
-        def set_sorting_thread(thread):
-            if self.sorting_thread is not None:
-                self.window.event.set()
-                self.sorting_thread.join()
-            self.window.event.clear()
-            self.sorting_thread = thread
-
-        def sort_done():
-            self.sorting_thread = None
-            self.window.event.set()
 
         self.sorting_thread = None
 
@@ -276,8 +276,8 @@ class SortingActions():
         resets = []
         def bind_function(sort_input):
             def func():
-                sort_algo = Wrapper.sequential_functions(Wrapper.add_args_to_func(sort_input.sort, self.array, self.window.event, self.aux_array), sort_done)
-                set_sorting_thread(threading.Thread(target=sort_algo))
+                sort_algo = Wrapper.sequential_functions(Wrapper.add_args_to_func(sort_input.sort, self.array, self.window.event, self.aux_array), self.sort_done)
+                self.set_sorting_thread(threading.Thread(target=sort_algo))
                 return self.sorting_thread.start()
             func.__name__ = sort_input.name
             return func
