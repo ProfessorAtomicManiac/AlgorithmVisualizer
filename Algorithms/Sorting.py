@@ -45,7 +45,8 @@ def insertion_sort(arr, event, aux = None):
 '''
 def quick_sort(arr, event, aux = None):
     quick_sort_method(arr, event, 0, arr.length())
-    finish(arr)
+    if not event.is_set():
+        finish(arr)
 
 def quick_sort_method(arr, event, begin, end):
     if (begin < end):
@@ -72,7 +73,8 @@ def quick_sort_method(arr, event, begin, end):
 '''
 def merge_sort(arr, event, aux = None):
     merge_sort_method(arr, event, 0, arr.length())
-    finish(arr)
+    if not event.is_set():
+        finish(arr)
 
 def merge_sort_method(arr, event, begin, end):
     if (begin+1 < end):
