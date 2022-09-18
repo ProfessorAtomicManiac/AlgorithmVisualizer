@@ -153,6 +153,10 @@ class Slide(pygame.sprite.Sprite):
             self.slide()
         self.destroy()
 
+    def change_text(self, text_arg):
+        self.image = text_arg.render()
+        self.rect = self.image.get_rect(center = self.coords)
+
 class ButtonConfig(pygame.sprite.Sprite):
     ''' Assumes images is a pair of images
         First image is photo when mouse is not hovering over it
@@ -213,9 +217,6 @@ class Text(Slide):
     def __init__(self, text_arg, coords, window, will_slide = True, screen = None):
         image = text_arg.render()
         super().__init__(image, coords, (0, 0), window, 400, will_slide, screen)
-
-    def change_text(self, text_arg):
-        self.image = text_arg.render()
 
 # TODO: There is a double where a click registers as a double click
 class Button(ButtonConfig, Slide):
@@ -756,7 +757,7 @@ class Slider():
 
     def do_func(self):
         self.slider.set_coords(( self.func((self.slider.get_coords()[0] - self.coords[0] + self.length/2) / self.length) * self.length + self.coords[0] - self.length / 2, self.coords[1])) 
-        print((self.slider.get_coords()[0] - self.coords[0] + self.length/2) / self.length)
+        #print((self.slider.get_coords()[0] - self.coords[0] + self.length/2) / self.length)
 
             
 class Midi():

@@ -335,10 +335,10 @@ class SortingActions():
         self.scroll_bar.append(Wrapper.ScrollBar(buttons, ((5*self.window.window.get_size()[0]/6), button_col_top + 2 * button_margin), (200, 50), self.scroll_group[1], self.window, "Choose Sorted", slide_in))
         # Options button
 
-        self.accessed = Wrapper.Text(Wrapper.DefaultText.text("Accessed Array Count: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 200, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/4), self.window, slide_in)
-        self.changes = Wrapper.Text(Wrapper.DefaultText.text("Swaps: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 600, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/4), self.window, slide_in)
-        self.aux_count = Wrapper.Text(Wrapper.DefaultText.text("", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 225, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/2 + self.MARGIN_Y), self.window, slide_in)
-        self.swaps = Wrapper.Text(Wrapper.DefaultText.text("Changes: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 600, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/2 + self.MARGIN_Y), self.window, slide_in)
+        self.accessed = Wrapper.Text(Wrapper.DefaultText.text("Accessed Array Count: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + self.SORTING_WIDTH/4, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/4), self.window, slide_in)
+        self.changes = Wrapper.Text(Wrapper.DefaultText.text("Swaps: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 3*self.SORTING_WIDTH/4, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/4), self.window, slide_in)
+        self.aux_count = Wrapper.Text(Wrapper.DefaultText.text("", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + self.SORTING_WIDTH/4, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/2 + self.MARGIN_Y), self.window, slide_in)
+        self.swaps = Wrapper.Text(Wrapper.DefaultText.text("Changes: ", Wrapper.FontSizes.BUTTON_SIZE), (self.MARGIN_X + 3*self.SORTING_WIDTH/4, self.SORTING_HEIGHT + 2*self.TITLE_Y + self.MARGIN_Y + self.TITLE_HEIGHT/2 + self.MARGIN_Y), self.window, slide_in)
 
         self.screen_group.add(self.accessed)
         self.screen_group.add(self.swaps)
