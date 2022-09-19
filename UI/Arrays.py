@@ -1,6 +1,8 @@
-import time
-import pygame
 import random
+import time
+
+import pygame
+
 
 class ArrayElement(pygame.sprite.Sprite):
 
@@ -41,8 +43,10 @@ class ArrayElement(pygame.sprite.Sprite):
         if (self.list[self.index] != self.val):
             #print("index is changed")
             dim = list(self.dim)
-            # TODO: Sometimes crashes due to null pointer, seems to happen when you are sorting then you press "advanced"
-            dim[1] = (self.list[self.index] - self.beg) * self.height_unit
+            try:
+                dim[1] = (self.list[self.index] - self.beg) * self.height_unit
+            except TypeError:
+                return
             assert (self.list[self.index] - self.beg) >= 0
 
             self.val = self.list[self.index]
