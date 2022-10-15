@@ -404,6 +404,14 @@ def miracle_sort(arr, event, aux = None):
         if status == 0:
             return
 
+def sort(arr, event, aux = None):
+    # sorting algorithm here
+    if (event.is_set()):
+        return -1
+    arr.get()
+    arr.swap()
+    arr.replace()
+
 # Sorting Algorithm Input
 class SA:
     ''' name = how it will appear on the dropdown menu

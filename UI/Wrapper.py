@@ -35,6 +35,9 @@ class Colors():
     BACKGROUND_SCROLL_COLOR = BUTTON_COLOR
     SCROLLBAR_COLOR = TEXT_COLOR
     DEFAULT_BORDER_COLOR = TEXT_COLOR
+    WHITE = "#FFFFFF"
+    BLACK = "#000000"
+    RED = "#fc0505"
 
 class FontSizes():
     BUTTON_SIZE = 25
@@ -539,9 +542,9 @@ class ScrollButton(pygame.sprite.Sprite):
                     self.is_chosen = True
                 self.handled = True
             else:
-                self.image.fill("#778DA9")
+                self.image.fill(Colors.HOVER_BUTTON_COLOR)
         else:
-            self.image.fill("#415A77")
+            self.image.fill(Colors.BUTTON_COLOR)
 
     def set_pressable(self):
         if (not self.can_press and self.timer_is_handled):
@@ -649,7 +652,7 @@ class TextBox(pygame.sprite.Sprite):
         self.image = pygame.Surface(dim)
         self.rect = self.image.get_rect(center = coords)
         self.window = window
-        self.image.fill("#FFFFFF")
+        self.image.fill(Colors.WHITE)
         self.after_text = after_text
 
         self.text_arg = default_text

@@ -2,7 +2,8 @@ import random
 import time
 
 import pygame
-
+import random
+import UI.Wrapper as Wrapper
 
 class ArrayElement(pygame.sprite.Sprite):
 
@@ -16,7 +17,7 @@ class ArrayElement(pygame.sprite.Sprite):
     def __init__(self, coords, dim, visited, list, height_unit, index, beg):
         super().__init__()
         self.image = pygame.Surface(dim)
-        self.color = "#ffffff"
+        self.color = Wrapper.Colors.WHITE
         self.rect = self.image.get_rect(bottomleft = coords)
         self.coords = coords
         self.dim = dim
@@ -57,7 +58,7 @@ class ArrayElement(pygame.sprite.Sprite):
         if (self.visited[self.index]):
             #print("index is visited")
             self.still_colored = True
-            self.color = "#fc0505"
+            self.color = Wrapper.Colors.RED
             self.visited[self.index] = False
         
         if (self.still_colored):
@@ -65,7 +66,7 @@ class ArrayElement(pygame.sprite.Sprite):
             if (self.timer > 0.1):
                 #print("Index is unvisited")
                 self.still_colored = False
-                self.color = "#ffffff"
+                self.color = Wrapper.Colors.WHITE
                 self.timer = 0
 
             

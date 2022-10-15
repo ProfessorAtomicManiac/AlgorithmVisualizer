@@ -382,13 +382,13 @@ class SortingActions():
         self.options_group.add(Wrapper.Button((exit_1, exit_2), (self.window.window.get_size()[0]/2 + OPTIONS_WIDTH/2 - 25, text_start - 25), self.close_window, self.window, False, Wrapper.Screen.NONE))
 
         self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Time Delay", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start), self.window, False, Wrapper.Screen.NONE))
-        self.delay_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.delay), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 50), (200, 50), lambda a : self.array.change_delay(a), self.window, " secs", 1)
+        self.delay_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.delay), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, Wrapper.Colors.BLACK), (self.window.window.get_size()[0]/2, text_start + 50), (200, 50), lambda a : self.array.change_delay(a), self.window, " secs", 1)
         
         self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Array Size", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 100), self.window, False, Wrapper.Screen.NONE))
-        self.size_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.size), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 150), (200, 50), lambda a : self.array.change_size(a), self.window, "", 1)
+        self.size_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.array.size), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, Wrapper.Colors.BLACK), (self.window.window.get_size()[0]/2, text_start + 150), (200, 50), lambda a : self.array.change_size(a), self.window, "", 1)
                 
         self.options_group.add(Wrapper.Text(Wrapper.DefaultText.text("Instrument", Wrapper.FontSizes.SUB_TITLE_SIZE), (self.window.window.get_size()[0]/2, text_start + 200), self.window, False, Wrapper.Screen.NONE))
-        self.instrument_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.midi.instrument), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, "#000000"), (self.window.window.get_size()[0]/2, text_start + 250), (200, 50), lambda a : self.midi.change_instrument(a), self.window, "", 1)
+        self.instrument_textbox = Wrapper.TextBox(Wrapper.TextArgs(str(self.midi.instrument), Wrapper.Fonts(Wrapper.FontSizes.BUTTON_SIZE).UBUNTU_FONT, True, Wrapper.Colors.BLACK), (self.window.window.get_size()[0]/2, text_start + 250), (200, 50), lambda a : self.midi.change_instrument(a), self.window, "", 1)
         self.text_box_group.add(self.delay_textbox)
         self.text_box_group.add(self.size_textbox)
         self.text_box_group.add(self.instrument_textbox)
