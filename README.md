@@ -1,7 +1,9 @@
 # AlgorithmVisualizer
+Now has a video explaining the project/code: https://youtu.be/D_J2BEeXRWA <br>
+If you only want to see its functionality see: https://youtu.be/8AfptLWbQBQ <br>
+
 Work in progress. Using pygame to do all the work (although I'm still pretty unfamiliar with python in general)<br>
 Hopefully when its done it will have the following features:<br>
-Video Showcase: https://youtu.be/8AfptLWbQBQ <br>
 Currently finished with visualizing sorting algorithms<br>
 
 Still in progress (Probably suspended until next year): <br>
